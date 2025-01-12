@@ -1,0 +1,90 @@
+2.
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Utilizare: $0 <fisier1> <fisier2> ... <fisierN>"
+    exit 1
+fi
+
+for item in "$@"; do
+    if [[ -e "$item" ]]; then
+        # Tipul elementului
+        if [[ -f "$item" ]]; then
+            type="Fisier obisnuit"
+        elif [[ -d "$item" ]]; then
+            type="Director"
+        elif [[ -L "$item" ]]; then
+            type="Link simbolic"
+        else
+            type="Alt tip"
+        fi
+
+        # Dimensiunea fisierului sau a directorului
+        size=$(du -sh "$item" | cut -f1)
+
+        # Permisiunile fisierului sau directorului
+        permissions=$(stat -c "%A" "$item")
+
+        # Afisam detaliile pentru fiecare element
+        echo "	Element: $item"
+        echo "  Tip: $type"
+        echo "  Dimensiune: $size"
+        echo "  Permisiuni: $permissions"
+        echo ""
+    else
+        echo "Elementul $item nu exista!"
+    fi
+done
+
+3.
+
+
+#!/bin/bash
+
+for file in *; do
+    if [[ -d "$file" ]]; then
+        echo "$file/"
+    else
+        echo "$file"
+    fi
+done
+
+
+4.
+#!/bin/bash
+# https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+ps auxw | awk '{print $1, $2}'
+
+5.
+#!/bin/bash
+
+dir=$1
+name=""
+type=""
+command=""
+
+shift
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -name) name=$2; shift 2 ;;
+        -type) type=$2; shift 2 ;;
+        -exec) command=$2; shift 2 ;;
+        *) echo "Parametru necunoscut: $1"; exit 1 ;;
+    esac
+done
+
+for file in "$dir"/*; do
+    [[ -n "$name" && ! "$(basename "$file")" == "$name" ]] && continue
+    [[ -n "$type" && "$type" == "f" && ! -f "$file" ]] && continue
+    [[ -n "$type" && "$type" == "d" && ! -d "$file" ]] && continue
+
+    echo "$file"
+    
+    if [[ -n "$command" ]]; then
+        eval "$command $file"
+    fi
+done
+
+./myfind.sh -name="1.txt" -type f -exec "cat"
+

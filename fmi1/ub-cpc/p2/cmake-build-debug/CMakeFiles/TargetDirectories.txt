@@ -1,0 +1,3 @@
+C:/Users/Alexandru Scanteie/facultate/fmi1/ub-cpc/p2/cmake-build-debug/CMakeFiles/p2.dir
+C:/Users/Alexandru Scanteie/facultate/fmi1/ub-cpc/p2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Alexandru Scanteie/facultate/fmi1/ub-cpc/p2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
