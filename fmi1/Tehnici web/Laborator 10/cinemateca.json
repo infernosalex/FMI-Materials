@@ -1,0 +1,54 @@
+{
+	"cinemateca": {
+		"film": [
+			{
+				"titlu": {
+					"_limba": "en",
+					"__text": "The Shawshank Redemption"
+				},
+				"gen": "Drama",
+				"regizor": "Frank Darabont",
+				"an": "1994",
+				"scenarist": "Frank Darabont",
+				"producator": "Niki Marvin",
+				"actori": {
+					"actor": [
+						{
+							"_rol": "principal",
+							"__text": "Tim Robbins"
+						},
+						{
+							"_rol": "principal",
+							"__text": "Morgan Freeman"
+						}
+					]
+				},
+				"scor": "9.3"
+			},
+			{
+				"titlu": {
+					"_limba": "en",
+					"__text": "Inception"
+				},
+				"gen": "Sci-Fi",
+				"regizor": "Christopher Nolan",
+				"an": "2010",
+				"scenarist": "Christopher Nolan",
+				"producator": "Emma Thomas",
+				"actori": {
+					"actor": [
+						{
+							"_rol": "principal",
+							"__text": "Leonardo DiCaprio"
+						},
+						{
+							"_rol": "secundar",
+							"__text": "Joseph Gordon-Levitt"
+						}
+					]
+				},
+				"scor": "8.8"
+			}
+		]
+	}
+}

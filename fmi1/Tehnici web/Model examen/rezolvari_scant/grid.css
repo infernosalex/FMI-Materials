@@ -1,0 +1,37 @@
+#wrapper{
+    display: grid;
+    grid-template-rows: 60px 150px;
+    grid-template-columns: 150px 150px;
+    gap: 10px;  /* - spațiul dintre linii și coloane să fie de 10px */
+}
+div{
+    padding: 20px;
+}
+.box{
+    background-color:black;
+    color: white;
+}
+.A,.B,.C,.D{
+    /* border-color: white;
+    border-style: dashed; 
+    */
+    font-size: 150%;
+    border: 2px dashed white;
+}
+.D{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px
+}
+
+.E,.F,.G{
+    background-color: pink;
+    color: black;
+}
+
+@media (min-width: 200px) and (max-width: 600px) {
+    .wrapper {
+      display: inline;
+    }
+}

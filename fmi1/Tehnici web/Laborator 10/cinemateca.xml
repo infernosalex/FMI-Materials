@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cinemateca>
+    <film>
+        <titlu limba="en">The Shawshank Redemption</titlu>
+        <gen>Drama</gen>
+        <regizor>Frank Darabont</regizor>
+        <an>1994</an>
+        <scenarist>Frank Darabont</scenarist>
+        <producator>Niki Marvin</producator>
+        <actori>
+            <actor rol="principal">Tim Robbins</actor>
+            <actor rol="principal">Morgan Freeman</actor>
+        </actori>
+        <scor>9.3</scor>
+    </film>
+
+    <film>
+        <titlu limba="en">Inception</titlu>
+        <gen>Sci-Fi</gen>
+        <regizor>Christopher Nolan</regizor>
+        <an>2010</an>
+        <scenarist>Christopher Nolan</scenarist>
+        <producator>Emma Thomas</producator>
+        <actori>
+            <actor rol="principal">Leonardo DiCaprio</actor>
+            <actor rol="secundar">Joseph Gordon-Levitt</actor>
+        </actori>
+        <scor>8.8</scor>
+    </film>
+</cinemateca>

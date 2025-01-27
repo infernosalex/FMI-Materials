@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+html, body {
+	font-family: 'Roboto', sans-serif;
+	padding: 0;
+	margin: 0;
+}
+
+h1 {
+	font-size: 2rem;
+	text-align: center;
+
+	transition: font-size 0.5s;
+}
+
+header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+
+	background-color: #333;
+	color: #fff;
+	padding: 1rem 0 1.5rem 0;
+
+	transition: padding 0.5s;
+	&.resize {
+		padding-top: 0;
+		padding-bottom: 0.5rem;
+	}
+	&.resize h1 {
+		padding-top: 0.5rem;
+		font-size: 1.75rem;
+	}
+
+	h1 {
+		margin: 0;
+		padding: 0.5rem 0 1rem 0;
+	}
+
+	nav {
+		display: flex;
+		justify-content: center;
+	}
+
+	nav a {
+		margin: 0 1rem;
+		color: #22d3ee;
+
+		font-weight: 700;
+		text-decoration: none;
+
+		&:hover {
+			color: #cffafe;
+		}
+	}
+}
+
+main {
+	padding: 1.5rem;
+
+	section:first-of-type h2 {
+		margin-top: 0;
+	}
+
+	section > h2:first-child {
+		background: #ede9fe;
+		padding: 0.5rem;
+	}
+
+	p {
+		text-indent: 1.5rem;
+
+		:first-letter {
+			font-size: 3rem;
+			font-weight: 700;
+			margin-right: 0.5rem;
+		}
+	}
+
+	a {
+		color: #0c4a6e;
+		font-weight: 700;
+		text-decoration: underline;
+
+		&:hover {
+			color: #0c4a6e;
+		}
+	}
+
+	figure {
+		text-align: center;
+
+		img {
+			width: auto;
+		}
+
+		figcaption {
+			font-style: italic;
+		}
+	}
+}
+
+footer {
+	background-color: #333;
+	color: #fff;
+	padding: 1rem;
+	text-align: center;
+}
+
+.iframeContainer {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}

@@ -1,0 +1,21 @@
+
+#container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+#info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10px;
+}
+
+#gallery {
+  display: grid; 
+  /* ... */
+}
+
+
+
