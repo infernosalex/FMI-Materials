@@ -1,0 +1,32 @@
+html {
+ height: 100%;
+}
+
+body {
+ background-color: #dedede;
+ height: 100%;
+}
+
+.rotateright {
+  animation: rotateright 1s infinite linear;
+}
+
+.rotateleft {
+  animation: rotateleft 1s infinite linear;
+}
+
+.paused {
+  animation-play-state: paused;
+}
+
+@keyframes rotateright {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotateleft {
+  100% {
+    transform: rotate(-360deg);
+  }
+}

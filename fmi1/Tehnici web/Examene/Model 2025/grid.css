@@ -1,0 +1,48 @@
+#wrapper{
+    display: grid;
+    grid-template-rows: 60px 150px;
+    grid-template-columns: 150px 150px;
+    grid-gap: 10px;  /* - spațiul dintre linii și coloane să fie de 10px */
+    
+}
+.box{
+    background-color:black;
+    color: white;
+}
+.A,.B,.C,.D{
+    border: 2px dashed white;
+    padding: 20px;
+}
+.D{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 10px
+}
+
+.E,.F,.G{
+    background-color: pink;
+    color: black;
+    padding: 10px;
+}
+
+.E{
+    grid-row: 1;
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.F{
+    grid-row: 2;
+    grid-column: 1;
+}
+.G{
+    grid-row: 2;
+    grid-column: 2;
+}
+
+@media (min-width: 200px) and (max-width: 600px) {
+    #wrapper {
+      display: block;
+    }
+}

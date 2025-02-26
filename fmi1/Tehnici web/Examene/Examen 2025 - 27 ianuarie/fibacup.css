@@ -1,0 +1,17 @@
+.tabela{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 600px;
+    padding: 10px;
+}
+body:has(.tabela:hover) p{
+    opacity: 1;
+}
+p{
+    display: block;
+    opacity: 0;
+    text-align: center;
+    width: 600px;
+    font-size: 30px;
+}

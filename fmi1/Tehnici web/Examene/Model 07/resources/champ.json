@@ -1,0 +1,34 @@
+{
+    "matches": [
+        {
+            "homeflag": "resources/images/flags/de.svg",
+            "guestflag": "resources/images/flags/gb-sct.svg",
+            "date": "Friday 14 June 2024",
+            "time": "22:00",
+            "homeTeam": "Germany",
+            "guestTeam": "Scotland",
+            "country_where": "Germany",
+            "country_code": "DE"
+        },
+        {
+            "homeflag": "resources/images/flags/fr.svg",
+            "guestflag": "resources/images/flags/gb-eng.svg",
+            "date": "Saturday 15 June 2024",
+            "time": "20:00",
+            "homeTeam": "France",
+            "guestTeam": "England",
+            "country_where": "France",
+            "country_code": "FR"
+        },
+        {
+            "homeflag": "resources/images/flags/es.svg",
+            "guestflag": "resources/images/flags/it.svg",
+            "date": "Sunday 16 June 2024",
+            "time": "18:00",
+            "homeTeam": "Spain",
+            "guestTeam": "Italy",
+            "country_where": "Spain",
+            "country_code": "ES"
+        }
+    ]
+}

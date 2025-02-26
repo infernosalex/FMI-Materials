@@ -1,0 +1,7 @@
+[
+  {"name":"Cumulonimbus", "abbreviation":"Cb", "family":"D", "altitude":"500-16000 m", "appearance":"Dark-based storm cloud capable of impressive vertical growth", "precipitation":"Very common rain, snow, snow pellets or hail, heavy at times","image":"https://upload.wikimedia.org/wikipedia/commons/9/93/Fly00890_-_Flickr_-_NOAA_Photo_Library.jpg"},
+  {"name":"Cumulus", "abbreviation":"Cu", "family":"C", "altitude":"200–2000 m", "appearance":"Low-altitude, fluffy heaps of clouds with cotton-like appearance", "precipitation":"Uncommon rain, snow, or snow pellets","image":"https://upload.wikimedia.org/wikipedia/commons/3/3c/GoldenMedows.jpg"},
+  {"name":"Stratocumulus", "abbreviation":"Sc", "family":"C", "altitude":"500-2000 m", "appearance":"Thicker, dark gray, and somewhat conjoined heaps of clouds", "precipitation":"Uncommon rain, snow, or snow pellets","image":"https://upload.wikimedia.org/wikipedia/commons/4/4b/Above_the_Clouds.jpg"},
+   {"name":"Cirrus", "abbreviation":"Ci", "family":"E", "altitude":"2000-40000m", "appearance":"Delicate and wispy with white strands", "precipitation":"Uncommon rain, snow; common snow pellets","image":"https://upload.wikimedia.org/wikipedia/commons/2/2e/CirrusField-color.jpg"},
+   {"name":"Stratus", "abbreviation":"St", "family":"C", "altitude":"0-2000 m", "appearance":"Gray, featureless low-altitude cloud capable of ground contact", "precipitation":"Common Drizzle, freezing drizzle, anow or snow grains", "image":"https://upload.wikimedia.org/wikipedia/commons/d/d1/Stratus-Opacus-Uniformis.jpg"}
+  ]
