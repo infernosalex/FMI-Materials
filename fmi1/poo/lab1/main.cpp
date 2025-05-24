@@ -41,6 +41,7 @@ namespace polynomial_tests {
     void monic_polynomial();
     void constant_polynomial();
     void is_monic_polynomial();
+    void monic_polynomial_exception_handling();
 }
 
 int main() {
@@ -87,6 +88,7 @@ int main() {
     polynomial_tests::monic_polynomial();
     polynomial_tests::constant_polynomial();
     polynomial_tests::is_monic_polynomial();
+    polynomial_tests::monic_polynomial_exception_handling();
     std::cout<<"All polynomial tests are passing!"<<std::endl;
     
     return 0;

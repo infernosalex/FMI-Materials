@@ -5,6 +5,7 @@
 #include "vector.h"
 #include <cmath>
 #include <string>
+#include <stdexcept>
 
 class ConstantPolynomial;
 
@@ -105,7 +106,11 @@ public:
     
     double getValue() const;
 };
-// TODO : try exception handling in the MonicPolynomial class validation
+
+// Exception handling implemented in MonicPolynomial class validation
+// - Validates non-zero leading coefficients in constructors and normalization
+// - Prevents setting leading coefficient to zero
+// - Provides detailed error messages for debugging
 int isMonicPolynomial(const Polynomial* poly);
 
 #endif

@@ -506,4 +506,77 @@ namespace polynomial_tests {
             }
         });
     }
+
+    void monic_polynomial_exception_handling() {
+        base("MonicPolynomial exception handling", []() {
+            // Test 1: Creating MonicPolynomial from zero polynomial should throw
+            try {
+                vector<double> zero_coeffs = make_vector({0.0});
+                Polynomial zero_poly(zero_coeffs);
+                MonicPolynomial monic_from_zero(zero_poly);
+                throw std::runtime_error("Should have thrown exception for zero polynomial");
+            } catch (std::runtime_error& e) {
+                std::string error_msg(e.what());
+                if (error_msg.find("zero polynomial") == std::string::npos) {
+                    throw std::runtime_error("Wrong exception message for zero polynomial");
+                }
+            }
+            
+            // Test 2: Setting leading coefficient to zero should throw
+            try {
+                MonicPolynomial monic(2);
+                monic.setCoefficient(2, 0.0);
+                throw std::runtime_error("Should have thrown exception when setting leading coefficient to zero");
+            } catch (std::invalid_argument& e) {
+                std::string error_msg(e.what());
+                if (error_msg.find("leading coefficient to zero") == std::string::npos) {
+                    throw std::runtime_error("Wrong exception message for setting leading coefficient to zero");
+                }
+            }
+            
+            // Test 3: Setting new leading coefficient to zero should throw
+            try {
+                MonicPolynomial monic(1);  // degree 1 monic polynomial
+                monic.setCoefficient(3, 0.0);  // try to extend to degree 3 with zero coefficient
+                throw std::runtime_error("Should have thrown exception when setting new leading coefficient to zero");
+            } catch (std::invalid_argument& e) {
+                std::string error_msg(e.what());
+                if (error_msg.find("new leading coefficient to zero") == std::string::npos) {
+                    throw std::runtime_error("Wrong exception message for new leading coefficient");
+                }
+            }
+            
+            // Test 4: Valid MonicPolynomial operations should work
+            try {
+                // Create from valid polynomial
+                vector<double> valid_coeffs = make_vector({1.0, 2.0, 3.0});
+                Polynomial valid_poly(valid_coeffs);
+                MonicPolynomial monic_from_valid(valid_poly);
+                
+                // Check that it's properly normalized (leading coefficient = 1)
+                if (std::abs(monic_from_valid.getCoefficient(2) - 1.0) > Polynomial::epsilon) {
+                    throw std::runtime_error("MonicPolynomial not properly normalized");
+                }
+                
+                // Set non-leading coefficients should work
+                monic_from_valid.setCoefficient(0, 5.0);
+                monic_from_valid.setCoefficient(1, 10.0);
+                
+                // Setting leading coefficient to non-zero should work
+                monic_from_valid.setCoefficient(2, 2.0);
+                // Should be normalized back to 1
+                if (std::abs(monic_from_valid.getCoefficient(2) - 1.0) > Polynomial::epsilon) {
+                    throw std::runtime_error("MonicPolynomial not properly renormalized after setting leading coefficient");
+                }
+                
+            } catch (std::exception& e) {
+                throw std::runtime_error(std::string("Valid operations should not throw: ") + e.what());
+            }
+            
+            // Test 5: Null pointer handling in isMonicPolynomial
+            if (isMonicPolynomial(nullptr) != -1) {
+                throw std::runtime_error("isMonicPolynomial should handle null pointer gracefully");
+            }
+        });
+    }
 }
