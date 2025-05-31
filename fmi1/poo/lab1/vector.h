@@ -35,6 +35,10 @@ public:
     type * begin();
     type * end();
 
+    // Const versions for template compatibility
+    const type * begin() const;
+    const type * end() const;
+
     void push_back(const type& value);
     void pop_back();
     void clear();

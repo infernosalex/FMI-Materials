@@ -181,7 +181,7 @@ namespace polynomial_tests {
             vector<double> coeffs = make_vector({1.0, 2.0, 3.0, 4.0}); // 1 + 2x + 3x^2 + 4x^3
             Polynomial p(coeffs);
             
-            Polynomial p_prime = p.derivative();
+            Polynomial p_prime = p.polynomialDerivative();
             // Derivative should be 2 + 6x + 12x^2
             if (p_prime.degree() != 2) {
                 throw std::runtime_error("Incorrect degree of derivative");
@@ -195,7 +195,7 @@ namespace polynomial_tests {
             
             // Test derivative of constant
             Polynomial constant(make_vector({5.0}));
-            Polynomial const_deriv = constant.derivative();
+            Polynomial const_deriv = constant.polynomialDerivative();
             if (const_deriv.degree() != 0 || std::abs(const_deriv.getCoefficient(0) - 0.0) > Polynomial::epsilon) {
                 throw std::runtime_error("Derivative of constant should be zero");
             }
@@ -208,13 +208,13 @@ namespace polynomial_tests {
             Polynomial p(coeffs);
             
             // First derivative: 2 + 6x + 12x^2
-            Polynomial p_prime1 = p.nthDerivative(1);
+            Polynomial p_prime1 = p.nthPolynomialDerivative(1);
             if (p_prime1.degree() != 2) {
                 throw std::runtime_error("Incorrect degree of 1st derivative");
             }
             
             // Second derivative: 6 + 24x
-            Polynomial p_prime2 = p.nthDerivative(2);
+            Polynomial p_prime2 = p.nthPolynomialDerivative(2);
             if (p_prime2.degree() != 1) {
                 throw std::runtime_error("Incorrect degree of 2nd derivative");
             }
@@ -224,7 +224,7 @@ namespace polynomial_tests {
             }
             
             // Third derivative: 24
-            Polynomial p_prime3 = p.nthDerivative(3);
+            Polynomial p_prime3 = p.nthPolynomialDerivative(3);
             if (p_prime3.degree() != 0) {
                 throw std::runtime_error("Incorrect degree of 3rd derivative");
             }
@@ -233,7 +233,7 @@ namespace polynomial_tests {
             }
             
             // Fourth derivative: 0
-            Polynomial p_prime4 = p.nthDerivative(4);
+            Polynomial p_prime4 = p.nthPolynomialDerivative(4);
             if (p_prime4.degree() != 0) {
                 throw std::runtime_error("Incorrect degree of 4th derivative");
             }
@@ -462,10 +462,13 @@ namespace polynomial_tests {
             }
             
             // Test derivative
-            Polynomial d = c2.derivative();
-            if (d.degree() != 0 || std::abs(d.getCoefficient(0) - 0.0) > Polynomial::epsilon) {
+            AbstractPolynomial* d_ptr = c2.derivative();
+            ConstantPolynomial* d = dynamic_cast<ConstantPolynomial*>(d_ptr);
+            if (d == nullptr || d->degree() != 0 || std::abs(d->getCoefficient(0) - 0.0) > Polynomial::epsilon) {
+                delete d_ptr;
                 throw std::runtime_error("Derivative of ConstantPolynomial should be zero");
             }
+            delete d_ptr;
             
             // Test set coefficient with invalid index
             try {

@@ -173,6 +173,18 @@ type * vector<type>::end() {
 }
 
 template<class type>
+const type * vector<type>::begin() const {
+    if (empty()) return nullptr;
+    return contents_;
+}
+
+template<class type>
+const type * vector<type>::end() const {
+    if (empty()) return nullptr;
+    return contents_ + size_;
+}
+
+template<class type>
 void vector<type>::erase(type* begin, type* end) {
     assert(begin >= contents_ && begin < contents_ + size_);
     assert(end >= contents_ && end < contents_ + size_);

@@ -1,3 +1,0 @@
-/home/infernosalex/facultate/fmi1/poo/lab1/cmake-build-debug/CMakeFiles/lab1.dir
-/home/infernosalex/facultate/fmi1/poo/lab1/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/infernosalex/facultate/fmi1/poo/lab1/cmake-build-debug/CMakeFiles/rebuild_cache.dir

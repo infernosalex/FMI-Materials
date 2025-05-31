@@ -3,8 +3,13 @@
 #include <string>
 #include <stdexcept>
 
+// Abstract base class destructor implementation
+AbstractPolynomial::~AbstractPolynomial() {}
+
 // Basic constructors and destructors
-Polynomial::Polynomial() : coefficients() {}
+Polynomial::Polynomial() : coefficients(1) {
+    coefficients[0] = 0.0;  // Initialize as zero polynomial
+}
 
 Polynomial::Polynomial(const vector<double>& coeffs) : coefficients(coeffs) {
     removeLeadingZeros();
@@ -27,8 +32,13 @@ unsigned int Polynomial::degree() const {
     return coefficients.empty() ? 0 : coefficients.size() - 1;
 }
 
-// Implementation of Polynomial::derivative() moved from the header to avoid multiple definitions
-Polynomial Polynomial::derivative() const {
+// Implementation of abstract method - returns AbstractPolynomial* for polymorphism
+AbstractPolynomial* Polynomial::derivative() const {
+    return new Polynomial(polynomialDerivative());
+}
+
+// Polynomial-specific derivative method that returns Polynomial
+Polynomial Polynomial::polynomialDerivative() const {
     if (degree() == 0) {
         return ConstantPolynomial(0.0);
     }
@@ -40,23 +50,16 @@ Polynomial Polynomial::derivative() const {
     return result;
 }
 
-// Method to remove leading zeros
-void Polynomial::removeLeadingZeros() {
-    int newSize = coefficients.size();
-    while (newSize > 1 && std::abs(coefficients[newSize - 1]) < epsilon) {
-        newSize--;
-    }
-    
-    if (newSize < (int)coefficients.size()) {
-        coefficients.resize(newSize);
-    }
+// Clone method for polymorphic copying
+AbstractPolynomial* Polynomial::clone() const {
+    return new Polynomial(*this);
 }
 
 // n-th derivative implementation
-Polynomial Polynomial::nthDerivative(unsigned int n) const {
+Polynomial Polynomial::nthPolynomialDerivative(unsigned int n) const {
     Polynomial result = *this;
     for (unsigned int i = 0; i < n; i++) {
-        result = result.derivative();
+        result = result.polynomialDerivative();
     }
     return result;
 }
@@ -144,10 +147,10 @@ Polynomial Polynomial::operator+(const Polynomial& other) const {
     for (unsigned int i = 0; i <= maxDegree; i++) {
         double sum = 0.0;
         if (i <= degree()) {
-            sum += coefficients[i];
+            sum += getCoefficient(i);  // Use getCoefficient instead of direct access
         }
         if (i <= other.degree()) {
-            sum += other.coefficients[i];
+            sum += other.getCoefficient(i);  // Use getCoefficient instead of direct access
         }
         result.setCoefficient(i, sum);
     }
@@ -163,10 +166,10 @@ Polynomial Polynomial::operator-(const Polynomial& other) const {
     for (unsigned int i = 0; i <= maxDegree; i++) {
         double diff = 0.0;
         if (i <= degree()) {
-            diff += coefficients[i];
+            diff += getCoefficient(i);  // Use getCoefficient instead of direct access
         }
         if (i <= other.degree()) {
-            diff -= other.coefficients[i];
+            diff -= other.getCoefficient(i);  // Use getCoefficient instead of direct access
         }
         result.setCoefficient(i, diff);
     }
@@ -319,8 +322,8 @@ void ConstantPolynomial::setCoefficient(unsigned int index, double value) {
     Polynomial::setCoefficient(0, value);
 }
 
-Polynomial ConstantPolynomial::derivative() const {
-    return ConstantPolynomial(0.0);
+AbstractPolynomial* ConstantPolynomial::derivative() const {
+    return new ConstantPolynomial(0.0);
 }
 
 double ConstantPolynomial::evaluate(double) const {
@@ -330,6 +333,7 @@ double ConstantPolynomial::evaluate(double) const {
 double ConstantPolynomial::getValue() const {
     return getCoefficient(0);
 }
+
 std::ostream& operator<<(std::ostream& os, const Polynomial& poly) {
     os << poly.toString();
     return os;
@@ -365,5 +369,17 @@ int isMonicPolynomial(const Polynomial* poly) {
     } catch (const std::exception& e) {
         // Log the error and return -1 to indicate failure
         return -1;
+    }
+}
+
+// Implementation of removeLeadingZeros method
+void Polynomial::removeLeadingZeros() {
+    while (coefficients.size() > 1 && std::abs(coefficients.back()) < epsilon) {
+        coefficients.pop_back();
+    }
+    
+    // Ensure we always have at least one coefficient (for the zero polynomial)
+    if (coefficients.empty()) {
+        coefficients.push_back(0.0);
     }
 }

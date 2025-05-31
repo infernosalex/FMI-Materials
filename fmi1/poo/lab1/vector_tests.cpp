@@ -16,7 +16,8 @@ namespace {
 
 namespace vector_tests {
 	//void base(const std::string& name, void(* test)()) {
-	void base(const std::string& name, auto&& test) {
+	template<typename Func>
+	void base(const std::string& name, Func test) {
 		bool ok = true;
 		try {
 			test();

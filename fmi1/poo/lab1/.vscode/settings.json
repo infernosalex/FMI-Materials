@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "*.sage": "python",
-        "limits": "cpp",
-        "stdexcept": "cpp",
-        "iostream": "cpp"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}
