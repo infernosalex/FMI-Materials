@@ -1,0 +1,64 @@
+/* Form Styles */
+
+.form-control,
+.form-select {
+    background-color: var(--cream);
+    border: 1.5px solid var(--sand-300);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    transition: all var(--transition-base);
+    color: var(--sand-800);
+}
+
+.form-control::placeholder {
+    color: var(--sand-400);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--cream);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--sand-700);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.input-group-text {
+    background-color: var(--sand-50);
+    border: 1.5px solid var(--sand-300);
+    color: var(--sand-500);
+}
+
+/* Bootstrap validation feedback customization */
+.invalid-feedback {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--error);
+    font-weight: 500;
+}
+
+.valid-feedback {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--success);
+    font-weight: 500;
+}
+
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+    border-color: var(--error);
+}
+
+.was-validated .form-control:invalid:focus,
+.form-control.is-invalid:focus {
+    border-color: var(--error);
+    box-shadow: 0 0 0 0.2rem var(--error-glow);
+}

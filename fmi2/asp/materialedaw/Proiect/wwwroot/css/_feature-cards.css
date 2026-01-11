@@ -1,0 +1,43 @@
+/* Feature Cards */
+
+.feature-card {
+    padding: 2rem;
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    background-color: var(--cream);
+    transition: all var(--transition-medium);
+    height: 100%;
+}
+
+.feature-card:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+    background-color: var(--sand-50);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    aspect-ratio: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: var(--accent);
+    font-size: 1.75rem;
+}
+
+.feature-card h5 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--sand-900);
+    margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+    font-size: 0.9375rem;
+    color: var(--sand-600);
+    line-height: 1.6;
+    margin-bottom: 0;
+}

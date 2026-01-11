@@ -1,0 +1,102 @@
+/* Base Styles & Typography */
+
+/* ===========================
+   Base Styles
+   =========================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--cream);
+    color: var(--sand-800);
+    line-height: 1.65;
+    margin: 0;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+}
+
+/* Wider container for extra large screens */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
+@media (min-width: 2000px) {
+    .container {
+        max-width: 2200px;
+    }
+}
+
+/* Ensure minimum padding on edges */
+.container,
+.container-fluid {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 576px) {
+    .container,
+    .container-fluid {
+        padding-left: max(1.5rem, env(safe-area-inset-left));
+        padding-right: max(1.5rem, env(safe-area-inset-right));
+    }
+}
+
+@media (min-width: 992px) {
+    .container,
+    .container-fluid {
+        padding-left: max(2rem, env(safe-area-inset-left));
+        padding-right: max(2rem, env(safe-area-inset-right));
+    }
+}
+
+/* ===========================
+   Typography
+   =========================== */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--sand-900);
+    margin-top: 0;
+    letter-spacing: -0.02em;
+}
+
+h1 { font-size: 2.75rem; font-weight: 500; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; font-family: 'Source Sans 3', sans-serif; font-weight: 600; }
+h6 { font-size: 1rem; font-family: 'Source Sans 3', sans-serif; font-weight: 600; }
+
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--sand-600);
+    line-height: 1.7;
+}

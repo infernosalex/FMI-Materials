@@ -1,0 +1,35 @@
+/* Card Styles */
+
+.card {
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-medium);
+    background-color: var(--cream);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--sand-300);
+}
+
+.card-header {
+    background-color: var(--sand-50);
+    border-bottom: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    color: var(--sand-900);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Glass Card Effect */
+.glass-card {
+    background: var(--cream-85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--sand-200);
+}

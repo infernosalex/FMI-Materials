@@ -1,0 +1,250 @@
+/* ================================
+   Browse Page Styles
+   Page-specific styles only
+   ================================ */
+
+.browse-page {
+    min-height: calc(100vh - 80px);
+}
+
+.browse-header h1 {
+    font-family: 'Lora', Georgia, serif;
+    color: var(--sand-900);
+}
+
+/* Browse Sections */
+.browse-section {
+    background: var(--cream);
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+}
+
+.browse-section__header h2 {
+    color: var(--sand-700);
+    font-weight: 600;
+}
+
+/* Category Grid */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+/* Browse Category Card */
+.browse-category-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.browse-category-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.browse-category-card--active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.browse-category-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--sand-100);
+    border-radius: var(--radius-md);
+    color: var(--ochre);
+    font-size: 1.25rem;
+}
+
+.browse-category-card--active .browse-category-card__icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.browse-category-card__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.browse-category-card__name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--sand-800);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.browse-category-card--active .browse-category-card__name {
+    color: white;
+}
+
+.browse-category-card__count {
+    font-size: 0.75rem;
+    color: var(--sand-500);
+    margin: 0;
+}
+
+.browse-category-card--active .browse-category-card__count {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Filters Section - Combined with Trending Tags */
+.browse-filters-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.browse-filters-section > :first-child {
+    flex-grow: 1;
+    flex-basis: auto;
+    min-width: 0;
+}
+
+.browse-filters-section .browse-filters {
+    flex-shrink: 0;
+}
+
+/* Filter Bar */
+.browse-filters {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--cream);
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.filter-group label {
+    display: block;
+}
+
+.filter-group .form-select {
+    min-width: 140px;
+}
+
+/* Results Header */
+.browse-results-header {
+    background: var(--cream);
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+}
+
+.browse-results-header h2 {
+    color: var(--sand-700);
+    font-weight: 600;
+}
+
+/* Browse Sort Tabs - uses shared .sort-tab styles */
+.browse-sort-tabs {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Empty State */
+.browse-empty-state {
+    background: var(--cream);
+}
+
+.browse-empty-state .empty-state-icon {
+    opacity: 0.8;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+    .browse-header .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .browse-sort {
+        width: 100%;
+    }
+
+    .browse-sort .form-select {
+        width: 100%;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Use scrollable variant classes from _filters.css */
+    .browse-sort-tabs {
+        overflow-x: auto;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+    }
+
+    .browse-sort-tabs .sort-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .browse-filters-section {
+        flex-direction: column;
+    }
+
+    .browse-filters-section .browse-filters {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-group .form-select {
+        width: 100%;
+    }
+}
+
+/* Mobile-Optimized Very Small Screens (375-480px) */
+@media (max-width: 480px) {
+    .browse-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .browse-filters {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .sort-tabs {
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+    }
+
+    .browse-category-card__icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.25rem;
+    }
+}

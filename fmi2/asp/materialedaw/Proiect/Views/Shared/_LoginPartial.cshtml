@@ -1,0 +1,88 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = User.IsInRole("Admin");
+
+    <div class="nav-user">
+        <a class="btn btn-success" asp-controller="Bookmarks" asp-action="Create">
+            <i class="bi bi-plus"></i>
+            <span>New Bookmark</span>
+        </a>
+
+        <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="user-dropdown"
+               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                @if (!string.IsNullOrEmpty(user?.ProfilePictureUrl))
+                {
+                    <img src="@user.ProfilePictureUrl" alt="Profile" class="user-avatar">
+                }
+                else
+                {
+                    <div class="user-avatar user-avatar--initial">
+                        @(user?.FirstName?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                }
+                <span class="user-name">@(user?.FirstName ?? user?.UserName ?? "User")</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-dropdown">
+                <li>
+                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index" asp-route-username="@user?.UserName">
+                        <i class="bi bi-person"></i> My Profile
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Bookmarks" asp-action="MyBookmarks">
+                        <i class="bi bi-bookmarks"></i> My Bookmarks
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Categories" asp-action="Index">
+                        <i class="bi bi-folder"></i> My Categories
+                    </a>
+                </li>
+                @if (isAdmin)
+                {
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                            <i class="bi bi-shield-check"></i> Admin Panel
+                        </a>
+                    </li>
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Bookmarks" asp-action="Bookmarklet">
+                        <i class="bi bi-bookmark-plus"></i> Get Bookmarklet
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Account" asp-action="Manage">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+                <li>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+}
+else
+{
+    <div class="nav-auth">
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login">
+            Login
+        </a>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="Register">
+            Sign Up
+        </a>
+    </div>
+}

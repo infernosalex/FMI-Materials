@@ -1,0 +1,40 @@
+@model HomeIndexViewModel
+
+@if (Model.HasBookmarks)
+{
+    <div id="bookmark-feed-container"
+         data-page="@Model.PageNumber"
+         data-total-pages="@Model.TotalPages"
+         data-filter="@Model.ActiveFilter">
+        <div class="masonry-grid" id="bookmark-grid">
+            @foreach (var bookmark in Model.Bookmarks)
+            {
+                <partial name="_BookmarkCard" model="bookmark" />
+            }
+        </div>
+
+        @if (Model.PageNumber < Model.TotalPages)
+        {
+            <div class="infinite-scroll-trigger" id="infinite-scroll-trigger">
+                <div class="infinite-scroll-loader">
+                    <div class="loader-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="text-muted small mt-2">Loading more...</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="bookmark-empty-state text-center p-5 border rounded-4">
+        <h3 class="h5 mb-3">No bookmarks yet</h3>
+        <p class="text-muted mb-4">Be the first to add something interesting for the community.</p>
+        <a asp-controller="Bookmarks" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Bookmark
+        </a>
+    </div>
+}

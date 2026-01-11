@@ -1,0 +1,224 @@
+/* Bookmark Feed & Card Styles */
+
+/* ===========================
+   Bookmark Feed (Pinterest / Masonry Style)
+   =========================== */
+
+.bookmark-feed-section {
+    background-color: var(--sand-50);
+    border-top: 1px solid var(--sand-200);
+    border-bottom: 1px solid var(--sand-200);
+}
+
+.filter-toggle .btn {
+    min-width: 120px;
+    font-weight: 600;
+}
+
+.filter-toggle .btn.active {
+    color: #fff;
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Masonry Grid - Horizontal First (JS-powered) */
+.masonry-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Items styled for JS absolute positioning (multi-column) */
+.masonry-grid > .col {
+    display: block;
+    width: 100%;
+}
+
+/* Single column fallback (mobile) - natural flow */
+@media (max-width: 767px) {
+    .masonry-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: static !important;
+        height: auto !important;
+    }
+
+    .masonry-grid > .col {
+        position: static !important;
+        width: 100% !important;
+        left: auto !important;
+        top: auto !important;
+    }
+}
+
+.bookmark-card {
+    /* Remove h-100 so it shrinks to content */
+    height: auto !important;
+
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    background-color: var(--cream);
+    /* Subtle shadow */
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.bookmark-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--sand-300);
+}
+
+.bookmark-card__media {
+    position: relative;
+    width: 100%;
+    /* Dynamic Height for Pinterest look */
+    height: auto;
+    min-height: 40px;
+    overflow: hidden;
+    background: var(--sand-100);
+}
+
+.bookmark-card__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 90%,
+        var(--cream) 95%
+    );
+    pointer-events: none;
+}
+
+.bookmark-card__media img {
+    width: 100%;
+    height: auto; /* Preserve aspect ratio */
+    max-height: 450px; /* Limit max height for tall images */
+    object-fit: cover; /* Crop if max-height is hit */
+    display: block;
+}
+
+.bookmark-card__media--empty {
+    height: 120px; /* Fixed height only if empty */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--sand-100), var(--sand-200));
+}
+
+.bookmark-card__placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ochre);
+    font-size: 1.5rem;
+}
+
+.bookmark-card__body {
+    padding: 0 1.25rem;
+    flex-grow: 1;
+}
+
+.bookmark-card__body:first-child {
+    padding: 1.25rem;
+}
+
+.bookmark-card__title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--sand-900);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+}
+
+.bookmark-card__title:hover {
+    color: var(--accent);
+}
+
+.bookmark-card__description {
+    font-size: 0.9rem;
+    color: var(--sand-600);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.bookmark-card__text-preview {
+    font-size: 0.85rem;
+    color: var(--sand-700);
+    background-color: var(--sand-50);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin-bottom: 0;
+}
+
+.bookmark-card__meta {
+    padding: 0 0.75rem 1.25rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.bookmark-card__stats {
+    font-weight: 600;
+    color: var(--sand-700);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bookmark-empty-state {
+    background-color: var(--sand-50);
+}
+
+.bookmark-pagination .page-link {
+    border-radius: var(--radius-md);
+    border-color: var(--sand-200);
+    color: var(--sand-700);
+}
+
+.bookmark-pagination .page-item.disabled .page-link {
+    color: var(--sand-400);
+}
+
+.bookmark-card--private {
+    border: 1px solid var(--ochre-light);
+}
+
+.bookmark-card__private-indicator {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: var(--sand-700);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bookmark-card__private-indicator i {
+    font-size: 0.9rem;
+}
+
+/* Profile Page Masonry Override - max 2 columns */
+.masonry-grid-profile {
+    --masonry-max-columns: 2;
+}

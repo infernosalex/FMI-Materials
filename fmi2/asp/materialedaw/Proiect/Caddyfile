@@ -1,0 +1,6 @@
+markly.pwnfield.space {
+    basicauth {
+        markly {$MARKLY_BASICAUTH_HASH}
+    }
+    reverse_proxy markly:8080
+}

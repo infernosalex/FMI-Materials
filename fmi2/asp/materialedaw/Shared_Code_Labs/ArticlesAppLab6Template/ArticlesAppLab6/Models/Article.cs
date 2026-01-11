@@ -1,0 +1,33 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ArticlesApp.Models
+{
+    public class Article
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Titlul este obligatoriu")]
+        public string Title { get; set; } 
+
+        [Required(ErrorMessage = "Continutul articolului este obligatoriu")]
+        public string Content { get; set; } 
+
+        public DateTime Date { get; set; }
+
+        // relatie configuranta folosind conventiile de nume din EF
+        
+
+
+        /* daca nu se respect conventiile de nume de foloseste implementarea urmatoare
+         * 
+        public int CategId { get; set; } // nume care nu respecta conventia
+
+        [ForeignKey(nameof(CategId))]
+        public virtual Category Category { get; set; } = null!;
+
+        */
+    }
+
+}

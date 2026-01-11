@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: markly-postgres
+    environment:
+      POSTGRES_DB: markly
+      POSTGRES_USER: markly_user
+      POSTGRES_PASSWORD: markly_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+  markly:
+    build: .
+    container_name: markly-app
+    environment:
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=markly;Username=markly_user;Password=markly_password
+      ASPNETCORE_ENVIRONMENT: Production
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+  caddy:
+    image: caddy:2-alpine
+    container_name: markly-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      MARKLY_BASICAUTH_HASH: ${MARKLY_BASICAUTH_HASH}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - markly
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

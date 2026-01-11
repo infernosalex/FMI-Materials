@@ -1,0 +1,36 @@
+@* Share Modal with QR Code *@
+<div class="modal fade" id="share-modal" tabindex="-1" aria-labelledby="share-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="share-modal-label">
+                    <i class="bi bi-share me-2"></i>Share Bookmark
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="text-muted mb-3" id="share-modal-title">Share this bookmark</p>
+
+                <div id="qr-code-container" class="qr-code-container mb-4">
+                    <div id="qr-code-canvas"></div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="share-url-input" readonly>
+                    <button class="btn btn-outline-secondary" type="button" id="copy-link-btn" title="Copy link">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button type="button" class="btn btn-primary" id="download-qr-btn">
+                        <i class="bi bi-download me-2"></i>Download QR
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="native-share-btn">
+                        <i class="bi bi-box-arrow-up me-2"></i>More Options
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

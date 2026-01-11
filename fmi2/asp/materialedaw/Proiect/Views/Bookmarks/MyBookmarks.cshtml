@@ -1,0 +1,209 @@
+@model MyBookmarksViewModel
+
+@{
+    ViewData["Title"] = "My Bookmarks";
+}
+
+<section class="browse-page py-4">
+    <div class="container">
+        @* Page Header *@
+        <div class="browse-header mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="h3 mb-2">My Bookmarks</h1>
+                    <p class="text-muted mb-0">All your saved bookmarks in one place</p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (Model.HasBookmarks)
+                    {
+                        <a asp-action="ExportMyBookmarksMarkdown"
+                           asp-route-filter="@Model.CurrentFilter"
+                           asp-route-sort="@Model.CurrentSort"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-download me-1"></i>Export
+                        </a>
+                    }
+                    <a asp-controller="Bookmarks" asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Create
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.HasBookmarks)
+        {
+            @* Search & Filter Bar *@
+            <div class="browse-filters-section mb-4">
+                <div class="d-flex justify-content-between align-items-stretch flex-wrap gap-3">
+                    @* Search Box *@
+                    <div class="browse-section flex-grow-1">
+                        <div class="browse-section__header mb-3">
+                            <h2 class="h6 mb-0">
+                                <i class="bi bi-search me-2"></i>Search
+                            </h2>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="bookmark-search"
+                                   placeholder="Search your bookmarks..." autocomplete="off">
+                        </div>
+                    </div>
+
+                    @* Filters *@
+                    <div class="browse-filters">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <div class="filter-group">
+                                <label class="form-label small text-muted mb-1">Visibility</label>
+                                <select class="form-select form-select-sm" id="visibility-select" style="min-width: 120px;">
+                                    <option value="all" selected="@(Model.CurrentFilter == "all")">All</option>
+                                    <option value="public" selected="@(Model.CurrentFilter == "public")">Public</option>
+                                    <option value="private" selected="@(Model.CurrentFilter == "private")">Private</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="form-label small text-muted mb-1">Sort by</label>
+                                <select class="form-select form-select-sm" id="sort-select" style="min-width: 150px;">
+                                    <option value="recent" selected="@(Model.CurrentSort == "recent")">Recently Added</option>
+                                    <option value="popular" selected="@(Model.CurrentSort == "popular")">Most Liked</option>
+                                    <option value="oldest" selected="@(Model.CurrentSort == "oldest")">Oldest First</option>
+                                    <option value="alphabetical" selected="@(Model.CurrentSort == "alphabetical")">Alphabetical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        @* Active Filters *@
+                        @if (Model.CurrentFilter != "all")
+                        {
+                            <div class="active-filters mt-3">
+                                <span class="text-muted small me-2">Active filters:</span>
+                                <a href="@Url.Action("MyBookmarks", new { filter = "all", sort = Model.CurrentSort })"
+                                   class="filter-chip">
+                                    <i class="bi bi-@(Model.CurrentFilter == "public" ? "globe" : "lock") me-1"></i>@(Model.CurrentFilter == "public" ? "Public" : "Private")
+                                    <i class="bi bi-x-lg ms-1"></i>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Results Header *@
+            <div class="browse-results-header mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="h6 mb-0">
+                        <i class="bi bi-bookmark me-2"></i>Your Bookmarks
+                    </h2>
+                    <span class="text-muted small">
+                        @Model.Bookmarks.Count() bookmark@(Model.Bookmarks.Count() != 1 ? "s" : "")
+                    </span>
+                </div>
+                <div class="browse-sort-tabs mt-3">
+                    <a href="@Url.Action("MyBookmarks", new { filter = Model.CurrentFilter, sort = "recent" })"
+                       class="sort-tab @(Model.CurrentSort == "recent" ? "sort-tab--active" : "")">
+                        Recent
+                    </a>
+                    <a href="@Url.Action("MyBookmarks", new { filter = Model.CurrentFilter, sort = "popular" })"
+                       class="sort-tab @(Model.CurrentSort == "popular" ? "sort-tab--active" : "")">
+                        Popular
+                    </a>
+                    <a href="@Url.Action("MyBookmarks", new { filter = Model.CurrentFilter, sort = "alphabetical" })"
+                       class="sort-tab @(Model.CurrentSort == "alphabetical" ? "sort-tab--active" : "")">
+                        A-Z
+                    </a>
+                </div>
+            </div>
+
+            @* Bookmarks Grid *@
+            <div class="masonry-grid" id="bookmark-grid">
+                @foreach (var bookmark in Model.Bookmarks)
+                {
+                    <partial name="_BookmarkCard" model="bookmark" />
+                }
+            </div>
+
+            @* No Results Message (Hidden by default) *@
+            <div id="no-results" class="bookmark-empty-state text-center p-5 border rounded-4" style="display: none;">
+                <i class="bi bi-search" style="font-size: 2rem; color: var(--sand-400);"></i>
+                <h3 class="h5 mb-2 mt-3">No matches found</h3>
+                <p class="text-muted mb-0">Try a different search term.</p>
+            </div>
+        }
+        else
+        {
+            @* Empty State *@
+            <div class="bookmark-empty-state text-center p-5 border rounded-4">
+                <img src="~/images/illustrations/no-bookmarks.svg" alt="" class="img-fluid mb-4" style="max-height: 180px;">
+                <h3 class="h5 mb-3">No bookmarks yet</h3>
+                <p class="text-muted mb-4">
+                    Start collecting and organizing your favorite content.<br>
+                    Create your first bookmark to get started!
+                </p>
+                <a asp-controller="Bookmarks" asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Create Your First Bookmark
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/browse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('bookmark-search');
+            const visibilitySelect = document.getElementById('visibility-select');
+            const sortSelect = document.getElementById('sort-select');
+
+            // Handle filter/sort changes via dropdowns
+            if (visibilitySelect) {
+                visibilitySelect.addEventListener('change', function() {
+                    const currentSort = sortSelect ? sortSelect.value : 'recent';
+                    window.location.href = `@Url.Action("MyBookmarks")?filter=${this.value}&sort=${currentSort}`;
+                });
+            }
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    const currentFilter = visibilitySelect ? visibilitySelect.value : 'all';
+                    window.location.href = `@Url.Action("MyBookmarks")?filter=${currentFilter}&sort=${this.value}`;
+                });
+            }
+
+            // Client-side search filtering
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const bookmarkGrid = document.getElementById('bookmark-grid');
+                if (!bookmarkGrid) return;
+
+                const bookmarkCards = bookmarkGrid.querySelectorAll('.bookmark-card');
+                const noResults = document.getElementById('no-results');
+                let visibleCount = 0;
+
+                requestAnimationFrame(() => {
+                    bookmarkCards.forEach(card => {
+                        const title = card.querySelector('.bookmark-card__title')?.textContent.toLowerCase() || '';
+                        const description = card.querySelector('.bookmark-card__description')?.textContent.toLowerCase() || '';
+                        const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+
+                        card.style.display = matchesSearch ? '' : 'none';
+                        if (matchesSearch) visibleCount++;
+                    });
+
+                    // Show/hide no results message
+                    if (noResults) {
+                        noResults.style.display = (visibleCount === 0 && searchTerm !== '') ? 'block' : 'none';
+                    }
+
+                    // Trigger masonry layout recalculation
+                    if (window.MasonryGrid) {
+                        window.MasonryGrid.layout();
+                    }
+                });
+            });
+        });
+    </script>
+}

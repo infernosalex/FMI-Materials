@@ -1,0 +1,218 @@
+/* ================================
+   Bookmarklet Page Styles
+   ================================ */
+
+/* Utility classes for accent colors */
+.bg-accent-subtle {
+    background-color: var(--accent-10);
+}
+
+.text-accent {
+    color: var(--accent);
+}
+
+.bg-accent {
+    background-color: var(--accent);
+}
+
+.border-dashed {
+    border-style: dashed !important;
+    border-color: var(--accent-30) !important;
+}
+
+/* Info Box */
+.info-box {
+    background-color: var(--accent-8);
+    border: 1px solid var(--accent-20);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--sand-800);
+}
+
+.info-box i {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+kbd {
+    background-color: var(--accent-5);
+    color: var(--sand-800);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--accent-15);
+    box-shadow: 0 1px 1px var(--accent-6);
+}
+
+/* ===========================
+   How It Works Flow
+   =========================== */
+
+.how-it-works-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem;
+    border-radius: 12px;
+    background: var(--sand-50);
+    border: 1px solid var(--sand-200);
+}
+
+.flow-step--highlight {
+    background: var(--accent-8);
+    border-color: var(--accent-20);
+}
+
+.flow-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid var(--sand-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--sand-600);
+}
+
+.flow-icon--magic {
+    background: var(--gradient-accent);
+    border: none;
+    color: white;
+}
+
+.flow-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.flow-content strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--sand-900);
+}
+
+.flow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    color: var(--sand-400);
+    font-size: 0.875rem;
+}
+
+/* ===========================
+   Troubleshooting Section
+   =========================== */
+
+.troubleshooting-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .troubleshooting-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.troubleshoot-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: var(--sand-50);
+    border: 1px solid var(--sand-200);
+    transition: border-color 0.2s ease;
+}
+
+.troubleshoot-item:hover {
+    border-color: var(--sand-300);
+}
+
+.troubleshoot-icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.troubleshoot-icon--warning {
+    background: var(--status-warning-bg);
+    color: var(--status-warning-icon);
+}
+
+.troubleshoot-icon--info {
+    background: var(--status-info-bg);
+    color: var(--status-info-icon);
+}
+
+.troubleshoot-icon--neutral {
+    background: var(--sand-100);
+    color: var(--sand-600);
+}
+
+.troubleshoot-icon--danger {
+    background: var(--status-danger-bg);
+    color: var(--status-danger-icon);
+}
+
+.troubleshoot-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.troubleshoot-content strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--sand-900);
+    font-size: 0.95rem;
+}
+
+.troubleshoot-solutions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.solution-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    background: white;
+    border: 1px solid var(--sand-200);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: var(--sand-700);
+}
+
+.solution-tag i {
+    color: var(--status-success-icon);
+}
+
+.solution-tag a {
+    padding-left: 0.5em;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.solution-tag a:hover {
+    text-decoration: underline;
+}

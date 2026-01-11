@@ -1,0 +1,122 @@
+/* Button Styles */
+
+.btn {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    font-size: 0.9375rem;
+    letter-spacing: 0;
+}
+
+.btn-vibrant,
+.btn-primary {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-vibrant:hover,
+.btn-primary:hover {
+    background-color: var(--accent-dark);
+    box-shadow: var(--shadow-md);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-success:hover {
+    background-color: var(--success-light);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+}
+
+/* Secondary/subtle button variant */
+.btn-secondary {
+    background-color: var(--sand-200);
+    color: var(--sand-700);
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: var(--sand-300);
+    color: var(--sand-800);
+}
+
+/* Override Bootstrap's active/focus states */
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:first-child:active,
+.btn-vibrant:active,
+.btn-vibrant.active {
+    background-color: var(--accent-dark) !important;
+    border-color: var(--accent-dark) !important;
+    color: white !important;
+}
+
+.btn-outline-primary:active,
+.btn-outline-primary.active {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+}
+
+.btn-check:checked + .btn,
+.btn-check:active + .btn {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+}
+
+/* Disabled state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Loading state variant */
+.btn.is-loading {
+    opacity: 0.8;
+    cursor: wait;
+    pointer-events: none;
+}
+
+.btn.is-loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 0.5rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

@@ -1,0 +1,236 @@
+@{
+    ViewData["Title"] = "Bookmarklet";
+    var baseUrl = ViewData["BaseUrl"]?.ToString() ?? "";
+
+    // Minified bookmarklet code
+    var bookmarkletCode = $"javascript:(function(){{var t=encodeURIComponent(document.title);var u=encodeURIComponent(location.href);var d=encodeURIComponent((document.querySelector('meta[name=\"description\"]')||{{}}).content||'');var i=encodeURIComponent((document.querySelector('meta[property=\"og:image\"]')||{{}}).content||'');window.open('{baseUrl}/Bookmarks/Create?title='+t+'&url='+u+'&description='+d+'&imageUrl='+i,'_blank');}})();";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-2">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-accent-subtle mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-bookmark-plus fs-1 text-accent"></i>
+                </div>
+                <h1 class="h2 fw-bold mb-3">Quick Save Bookmarklet</h1>
+                <p class="text-muted lead">
+                    Save any webpage to Markly with a single click, directly from your browser.
+                </p>
+            </div>
+
+
+            <div class="card shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h2 class="h5 fw-bold mb-4">
+                        <span class="badge bg-accent text-white rounded-pill me-2">1</span>
+                        Drag to Bookmarks Bar
+                    </h2>
+
+                    <div class="info-box d-flex align-items-center gap-3 mb-4">
+                        <i class="bi bi-info-circle fs-4"></i>
+                        <div class="small">
+                            <strong>Make sure your bookmarks bar is visible.</strong><br>
+                            Chrome/Edge: <kbd>Ctrl+Shift+B</kbd> &nbsp;|&nbsp; Firefox: <kbd>Ctrl+B</kbd> &nbsp;|&nbsp; Safari: View → Show Favorites Bar
+                        </div>
+                    </div>
+
+                    <div class="text-center py-4 mb-4 bg-light rounded-3 border-2 border-dashed">
+                        <p class="text-muted mb-3">Drag this button to your bookmarks bar:</p>
+                        <a href="@bookmarkletCode"
+                           class="btn btn-primary btn-lg px-4 py-2 shadow-sm"
+                           onclick="event.preventDefault(); alert('Drag this button to your bookmarks bar!');"
+                           title="Drag me to your bookmarks bar">
+                            <i class="bi bi-plus-circle me-2"></i>Save to Markly
+                        </a>
+                        <p class="text-muted small mt-3 mb-0">
+                            <i class="bi bi-arrow-up"></i> Click and drag, don't just click!
+                        </p>
+                    </div>
+
+                    <h2 class="h5 fw-bold mb-4">
+                        <span class="badge bg-accent text-white rounded-pill me-2">2</span>
+                        Use It Anywhere
+                    </h2>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-globe fs-4 text-accent"></i>
+                                </div>
+                                <div>
+                                    <strong>Visit any page</strong>
+                                    <p class="small text-muted mb-0">Browse to a page you want to save</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-cursor fs-4 text-accent"></i>
+                                </div>
+                                <div>
+                                    <strong>Click the bookmarklet</strong>
+                                    <p class="small text-muted mb-0">In your bookmarks bar</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-check-circle fs-4 text-accent"></i>
+                                </div>
+                                <div>
+                                    <strong>Save & organize</strong>
+                                    <p class="small text-muted mb-0">Add tags and categories</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted mb-1">Works on all major browsers</p>
+                        <div class="d-flex justify-content-center gap-4 text-muted">
+                            <i class="bi bi-browser-chrome fs-3" title="Chrome"></i>
+                            <i class="bi bi-browser-firefox fs-3" title="Firefox"></i>
+                            <i class="bi bi-browser-safari fs-3" title="Safari"></i>
+                            <i class="bi bi-browser-edge fs-3" title="Edge"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-4 text-center">
+                        <i class="bi bi-lightning-charge me-2 text-accent"></i>How It Works
+                    </h3>
+
+                    <div class="how-it-works-flow">
+                        <div class="flow-step">
+                            <div class="flow-icon">
+                                <i class="bi bi-cursor-fill"></i>
+                            </div>
+                            <div class="flow-content">
+                                <strong>One Click</strong>
+                                <p class="small text-muted mb-0">Click the bookmarklet from any webpage you want to save</p>
+                            </div>
+                        </div>
+
+                        <div class="flow-connector">
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+
+                        <div class="flow-step flow-step--highlight">
+                            <div class="flow-icon flow-icon--magic">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <div class="flow-content">
+                                <strong>Auto-Extract Metadata</strong>
+                                <p class="small text-muted mb-2">The bookmarklet reads the page's HTML and extracts:</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-type me-1"></i>Title</span>
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-link-45deg me-1"></i>URL</span>
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-card-text me-1"></i>Description</span>
+                                    <span class="badge bg-light text-dark border"><i class="bi bi-image me-1"></i>OG Image</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flow-connector">
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+
+                        <div class="flow-step">
+                            <div class="flow-icon">
+                                <i class="bi bi-window-plus"></i>
+                            </div>
+                            <div class="flow-content">
+                                <strong>Pre-filled Form</strong>
+                                <p class="small text-muted mb-0">Markly opens with everything filled in — just add tags and save</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Runs entirely in your browser — no data is sent until you save
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-4 text-center">
+                        <i class="bi bi-lifebuoy me-2 text-accent"></i>Troubleshooting
+                    </h3>
+
+                    <div class="troubleshooting-grid">
+                        <div class="troubleshoot-item">
+                            <div class="troubleshoot-icon troubleshoot-icon--warning">
+                                <i class="bi bi-hand-index"></i>
+                            </div>
+                            <div class="troubleshoot-content">
+                                <strong>Can't drag the button?</strong>
+                                <p class="small text-muted mb-2">The bookmarks bar might be hidden, or your browser blocks drag-and-drop.</p>
+                                <div class="troubleshoot-solutions">
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Show bookmarks bar first</span>
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Right-click → "Bookmark This Link"</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="troubleshoot-item">
+                            <div class="troubleshoot-icon troubleshoot-icon--info">
+                                <i class="bi bi-person-lock"></i>
+                            </div>
+                            <div class="troubleshoot-content">
+                                <strong>Asked to log in every time?</strong>
+                                <p class="small text-muted mb-2">Your session isn't persisting between tabs.</p>
+                                <div class="troubleshoot-solutions">
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Check "Remember me" when logging in</span>
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Allow cookies for this site</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="troubleshoot-item">
+                            <div class="troubleshoot-icon troubleshoot-icon--neutral">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <div class="troubleshoot-content">
+                                <strong>Image not captured?</strong>
+                                <p class="small text-muted mb-2">Not all sites include Open Graph image metadata.</p>
+                                <div class="troubleshoot-solutions">
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Paste image URL manually</span>
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>This is normal for some sites</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="troubleshoot-item">
+                            <div class="troubleshoot-icon troubleshoot-icon--danger">
+                                <i class="bi bi-shield-x"></i>
+                            </div>
+                            <div class="troubleshoot-content">
+                                <strong>Blocked by the website?</strong>
+                                <p class="small text-muted mb-2">Some sites have strict security policies that block bookmarklets.</p>
+                                <div class="troubleshoot-solutions">
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Copy the URL manually</span>
+                                    <span class="solution-tag"><i class="bi bi-check2 me-1"></i>Use <a asp-controller="Bookmarks" asp-action="Create">manual entry</a></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/bookmarklet.css" asp-append-version="true" />
+}

@@ -1,0 +1,55 @@
+/*
+ * Markly - Main Stylesheet
+ *
+ * File structure:
+ * - _variables.css     : CSS custom properties (colors, shadows, transitions)
+ * - _base.css          : Base styles, typography, container overrides
+ * - _navigation.css    : Header and navigation styles
+ * - _buttons.css       : Button variants and states
+ * - _cards.css         : Generic card styles
+ * - _forms.css         : Form controls and inputs
+ * - _components.css    : Alerts, dropdowns, badges, footer
+ * - _filters.css       : Filter chips, pills, tags, sort tabs
+ * - _skeleton.css      : Loading skeleton states and shimmer animations
+ * - _hero.css          : Hero and CTA sections
+ * - _feature-cards.css : Feature card components
+ * - _bookmark-card.css : Bookmark feed and card styles
+ * - _category.css      : Category picker and cards
+ * - _ai-suggestions.css: AI suggestions card
+ * - _comments.css      : Comments section
+ * - _voting.css        : Vote and action buttons
+ * - _admin.css         : Admin panel styles
+ * - _utilities.css     : Utility classes, animations, misc
+ */
+
+/* Design Tokens */
+@import '_variables.css';
+
+/* Foundation */
+@import '_base.css';
+@import '_navigation.css';
+
+/* Core Components */
+@import '_buttons.css';
+@import '_cards.css';
+@import '_forms.css';
+@import '_components.css';
+@import '_filters.css';
+@import '_skeleton.css';
+
+/* Page Sections */
+@import '_hero.css';
+@import '_feature-cards.css';
+
+/* Features */
+@import '_bookmark-card.css';
+@import '_category.css';
+@import '_ai-suggestions.css';
+@import '_comments.css';
+@import '_voting.css';
+
+/* Admin */
+@import '_admin.css';
+
+/* Utilities (loaded last for overrides) */
+@import '_utilities.css';

@@ -1,0 +1,938 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using markly.Data;
+using markly.Data.Entities;
+using markly.Helpers;
+using markly.Models;
+using markly.ViewModels;
+using markly.Services.Interfaces;
+
+namespace markly.Controllers;
+
+public class BookmarksController : Controller
+{
+    private const int PageSize = 12;
+
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<BookmarksController> _logger;
+    private readonly IAiSuggestionService _aiSuggestionService;
+    private readonly IRateLimitingService _rateLimitingService;
+
+    public BookmarksController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        ILogger<BookmarksController> logger,
+        IAiSuggestionService aiSuggestionService,
+        IRateLimitingService rateLimitingService)
+    {
+        _context = context;
+        _userManager = userManager;
+        _logger = logger;
+        _aiSuggestionService = aiSuggestionService;
+        _rateLimitingService = rateLimitingService;
+    }
+
+    #region MyBookmarks
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> MyBookmarks(string? filter, string? sort)
+    {
+        var currentUserId = _userManager.GetUserId(User);
+        if (currentUserId == null) return Challenge();
+
+        var query = GetMyBookmarksQuery(currentUserId, filter, sort)
+            .AsNoTracking()
+            .Select(b => new
+            {
+                Bookmark = b,
+                User = b.User,
+                VoteCount = b.Votes.Count,
+                IsLikedByCurrentUser = b.Votes.Any(v => v.UserId == currentUserId)
+            });
+
+        var bookmarks = await query.ToListAsync();
+
+        var bookmarkItems = bookmarks.Select(item =>
+        {
+            var b = item.Bookmark;
+            var media = BookmarkMediaContent.SafeFromJson(b.Content);
+            return new BookmarkListItemViewModel
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Description = b.Description,
+                AuthorName = UserHelper.GetAuthorName(item.User),
+                CreatedAt = b.CreatedAt,
+                VoteCount = item.VoteCount,
+                MediaImageUrl = media.ImageUrl,
+                MediaTextPreview = UserHelper.BuildTextPreview(media.TextContent, 160),
+                IsPrivate = !b.IsPublic,
+                IsLikedByCurrentUser = item.IsLikedByCurrentUser
+            };
+        }).ToList();
+
+        var model = new MyBookmarksViewModel
+        {
+            Bookmarks = bookmarkItems,
+            CurrentFilter = NormalizeFilter(filter),
+            CurrentSort = NormalizeSortForMyBookmarks(sort)
+        };
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> ExportMyBookmarksMarkdown(string? filter, string? sort)
+    {
+        var currentUserId = _userManager.GetUserId(User);
+        if (currentUserId == null) return Challenge();
+
+        var bookmarks = await GetMyBookmarksQuery(currentUserId, filter, sort)
+            .AsNoTracking()
+            .Include(b => b.BookmarkCategories).ThenInclude(bc => bc.Category)
+            .Include(b => b.BookmarkTags).ThenInclude(bt => bt.Tag)
+            .ToListAsync();
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var markdown = GenerateMarkdownExport(bookmarks, baseUrl);
+        var fileName = $"MyBookmarks-{DateTime.UtcNow:yyyy-MM-dd}.md";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(markdown);
+
+        return File(bytes, "text/markdown", fileName);
+    }
+
+    private string GenerateMarkdownExport(List<Bookmark> bookmarks, string baseUrl)
+    {
+        var sb = new System.Text.StringBuilder();
+
+        sb.AppendLine("# My Bookmarks Export");
+        sb.AppendLine($"Exported on: {DateTime.UtcNow:MMMM d, yyyy}");
+        sb.AppendLine();
+
+        if (!bookmarks.Any())
+        {
+            sb.AppendLine("No bookmarks to export.");
+            return sb.ToString();
+        }
+
+        // Get all unique categories
+        var categories = bookmarks
+            .SelectMany(b => b.BookmarkCategories.Select(bc => bc.Category))
+            .DistinctBy(c => c.Id)
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        // Export bookmarks by category
+        foreach (var category in categories)
+        {
+            var categoryBookmarks = bookmarks
+                .Where(b => b.BookmarkCategories.Any(bc => bc.CategoryId == category.Id))
+                .ToList();
+
+            if (categoryBookmarks.Any())
+            {
+                sb.AppendLine($"## {category.Name}");
+                sb.AppendLine();
+
+                foreach (var bookmark in categoryBookmarks)
+                {
+                    sb.AppendLine($"- [{bookmark.Title}]({baseUrl}/Bookmarks/Details/{bookmark.Id})");
+                    if (!string.IsNullOrWhiteSpace(bookmark.Description))
+                    {
+                        sb.AppendLine($"  {bookmark.Description}");
+                    }
+
+                    var tags = bookmark.BookmarkTags.Select(bt => bt.Tag.Name).ToList();
+                    if (tags.Any())
+                    {
+                        sb.AppendLine($"  Tags: {string.Join(", ", tags)}");
+                    }
+
+                    sb.AppendLine($"  Date: {bookmark.CreatedAt:MMMM d, yyyy}");
+                    sb.AppendLine($"  Privacy: {(bookmark.IsPublic ? "Public" : "Private")}");
+                    sb.AppendLine();
+                }
+            }
+        }
+
+        // Export uncategorized bookmarks
+        var uncategorizedBookmarks = bookmarks
+            .Where(b => !b.BookmarkCategories.Any())
+            .ToList();
+
+        if (uncategorizedBookmarks.Any())
+        {
+            sb.AppendLine("## Uncategorized");
+            sb.AppendLine();
+
+            foreach (var bookmark in uncategorizedBookmarks)
+            {
+                sb.AppendLine($"- [{bookmark.Title}]({baseUrl}/Bookmarks/Details/{bookmark.Id})");
+                if (!string.IsNullOrWhiteSpace(bookmark.Description))
+                {
+                    sb.AppendLine($"  {bookmark.Description}");
+                }
+
+                var tags = bookmark.BookmarkTags.Select(bt => bt.Tag.Name).ToList();
+                if (tags.Any())
+                {
+                    sb.AppendLine($"  Tags: {string.Join(", ", tags)}");
+                }
+
+                sb.AppendLine($"  Date: {bookmark.CreatedAt:MMMM d, yyyy}");
+                sb.AppendLine($"  Privacy: {(bookmark.IsPublic ? "Public" : "Private")}");
+                sb.AppendLine();
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    #endregion
+
+    #region Browse
+
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> Browse(string? sort, int? tag, int? category, string? time, int page = 1)
+    {
+        var model = await GetBrowseDataAsync(sort, tag, category, time, page);
+        return View(model);
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> BrowseFeed(string? sort, int? tag, int? category, string? time, int page = 1)
+    {
+        var model = await GetBrowseDataAsync(sort, tag, category, time, page);
+        return PartialView("_BrowseFeed", model);
+    }
+
+    private async Task<BrowseViewModel> GetBrowseDataAsync(string? sort, int? tagId, int? categoryId, string? timeRange, int page)
+    {
+        var normalizedSort = NormalizeSort(sort);
+        var pageNumber = page < 1 ? 1 : page;
+        var currentUserId = _userManager.GetUserId(User);
+
+        // Get trending tags (top 8 by bookmark count)
+        var trendingTags = await _context.Tags
+            .AsNoTracking()
+            .Select(t => new TrendingTagViewModel
+            {
+                Id = t.Id,
+                Name = t.Name,
+                BookmarkCount = t.BookmarkTags.Count(bt => bt.Bookmark.IsPublic)
+            })
+            .Where(t => t.BookmarkCount > 0)
+            .OrderByDescending(t => t.BookmarkCount)
+            .Take(8)
+            .ToListAsync();
+
+        // Build bookmarks query
+        var bookmarksQuery = _context.Bookmarks
+            .AsNoTracking()
+            .Where(b => b.IsPublic);
+
+        // Apply tag filter
+        if (tagId.HasValue)
+        {
+            bookmarksQuery = bookmarksQuery.Where(b => b.BookmarkTags.Any(bt => bt.TagId == tagId.Value));
+        }
+
+        // Apply category filter
+        if (categoryId.HasValue)
+        {
+            bookmarksQuery = bookmarksQuery.Where(b => b.BookmarkCategories.Any(bc => bc.CategoryId == categoryId.Value));
+        }
+
+        // Apply time range filter
+        if (!string.IsNullOrWhiteSpace(timeRange))
+        {
+            var cutoffDate = timeRange.ToLowerInvariant() switch
+            {
+                "day" => DateTime.UtcNow.AddDays(-1),
+                "week" => DateTime.UtcNow.AddDays(-7),
+                "month" => DateTime.UtcNow.AddMonths(-1),
+                "year" => DateTime.UtcNow.AddYears(-1),
+                _ => (DateTime?)null
+            };
+
+            if (cutoffDate.HasValue)
+            {
+                bookmarksQuery = bookmarksQuery.Where(b => b.CreatedAt >= cutoffDate.Value);
+            }
+        }
+
+        var totalCount = await bookmarksQuery.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)PageSize));
+        pageNumber = Math.Min(pageNumber, totalPages);
+
+        var projectedQuery = bookmarksQuery
+            .Select(b => new
+            {
+                Bookmark = b,
+                User = b.User,
+                VoteCount = b.Votes.Count,
+                CommentCount = b.Comments.Count,
+                IsLikedByCurrentUser = currentUserId != null && b.Votes.Any(v => v.UserId == currentUserId)
+            });
+
+        // Apply sorting
+        projectedQuery = normalizedSort switch
+        {
+            "popular" => projectedQuery.OrderByDescending(x => x.VoteCount).ThenByDescending(x => x.Bookmark.CreatedAt),
+            "discussed" => projectedQuery.OrderByDescending(x => x.CommentCount).ThenByDescending(x => x.Bookmark.CreatedAt),
+            _ => projectedQuery.OrderByDescending(x => x.Bookmark.CreatedAt)
+        };
+
+        var bookmarks = await projectedQuery
+            .Skip((pageNumber - 1) * PageSize)
+            .Take(PageSize)
+            .ToListAsync();
+
+        var bookmarkItems = bookmarks.Select(item =>
+        {
+            var b = item.Bookmark;
+            var media = BookmarkMediaContent.SafeFromJson(b.Content);
+            return new BookmarkListItemViewModel
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Description = b.Description,
+                AuthorName = UserHelper.GetAuthorName(item.User),
+                CreatedAt = b.CreatedAt,
+                VoteCount = item.VoteCount,
+                MediaImageUrl = media.ImageUrl,
+                MediaTextPreview = UserHelper.BuildTextPreview(media.TextContent, 160),
+                IsLikedByCurrentUser = item.IsLikedByCurrentUser
+            };
+        }).ToList();
+
+        // Get active filter names
+        string? activeTagName = null;
+        string? activeCategoryName = null;
+
+        if (tagId.HasValue)
+        {
+            activeTagName = await _context.Tags
+                .Where(t => t.Id == tagId.Value)
+                .Select(t => t.Name)
+                .FirstOrDefaultAsync();
+        }
+
+        if (categoryId.HasValue)
+        {
+            activeCategoryName = await _context.Categories
+                .Where(c => c.Id == categoryId.Value)
+                .Select(c => c.Name)
+                .FirstOrDefaultAsync();
+        }
+
+        return new BrowseViewModel
+        {
+            Sort = normalizedSort,
+            TagId = tagId,
+            CategoryId = categoryId,
+            TimeRange = timeRange,
+            TrendingTags = trendingTags,
+            Bookmarks = bookmarkItems,
+            PageNumber = pageNumber,
+            TotalPages = totalPages,
+            TotalResults = totalCount,
+            ActiveTagName = activeTagName,
+            ActiveCategoryName = activeCategoryName
+        };
+    }
+
+    private static string NormalizeSort(string? sort)
+    {
+        return sort?.ToLowerInvariant() switch
+        {
+            "popular" => "popular",
+            "discussed" => "discussed",
+            _ => "recent"
+        };
+    }
+
+    #endregion
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Create(string? title, string? url, string? description, string? imageUrl)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var model = new BookmarkFormViewModel();
+
+        // Pre-fill from bookmarklet query params
+        if (!string.IsNullOrWhiteSpace(title))
+            model.Title = title.Trim();
+        if (!string.IsNullOrWhiteSpace(url))
+            model.TextContent = url.Trim();
+        if (!string.IsNullOrWhiteSpace(description))
+            model.Description = description.Trim();
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+            model.ImageUrl = imageUrl.Trim();
+
+        await LoadCategories(model, user.Id);
+        await LoadTags(model);
+        return View(model);
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public IActionResult Bookmarklet()
+    {
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        ViewData["BaseUrl"] = baseUrl;
+        return View();
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(BookmarkFormViewModel model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        if (!ModelState.IsValid)
+        {
+            await LoadCategories(model, user.Id);
+            await LoadTags(model);
+            return View(model);
+        }
+
+        var bookmark = new Bookmark
+        {
+            Title = model.Title.Trim(),
+            Description = model.Description.Trim(),
+            IsPublic = model.IsPublic,
+            Content = BuildMediaContent(model).ToJson(),
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Bookmarks.Add(bookmark);
+
+        try
+        {
+            await _context.SaveChangesAsync(); // Save to get ID
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving bookmark");
+            ModelState.AddModelError("", "Failed to save bookmark. Please try again.");
+            await LoadCategories(model, user.Id);
+            await LoadTags(model);
+            return View(model);
+        }
+
+        // Add Categories
+        await UpdateBookmarkCategories(bookmark, model.SelectedCategoryIds, user.Id);
+
+        // Add Tags
+        await UpdateBookmarkTags(bookmark, model.SelectedTagIds);
+
+        TempData["SuccessMessage"] = "Bookmark created successfully.";
+        return RedirectToAction(nameof(Details), new { id = bookmark.Id });
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var bookmark = await _context.Bookmarks
+            .Include(b => b.BookmarkCategories)
+            .Include(b => b.BookmarkTags)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (bookmark == null)
+        {
+            return NotFound();
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (!IsOwner(bookmark, currentUserId))
+        {
+            return Forbid();
+        }
+
+        var media = BookmarkMediaContent.SafeFromJson(bookmark.Content);
+        var model = BuildFormViewModel(bookmark, media);
+
+        // Load categories and tags
+        await LoadCategories(model, currentUserId!);
+        await LoadTags(model);
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, BookmarkFormViewModel model)
+    {
+        if (id != model.Id)
+        {
+            return BadRequest();
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        if (!ModelState.IsValid)
+        {
+            await LoadCategories(model, user.Id);
+            await LoadTags(model);
+            return View(model);
+        }
+
+        var bookmark = await _context.Bookmarks
+            .Include(b => b.BookmarkCategories)
+            .Include(b => b.BookmarkTags)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (bookmark == null)
+        {
+            return NotFound();
+        }
+
+        if (!IsOwner(bookmark, user.Id))
+        {
+            return Forbid();
+        }
+
+        bookmark.Title = model.Title.Trim();
+        bookmark.Description = model.Description.Trim();
+        bookmark.IsPublic = model.IsPublic;
+        bookmark.Content = BuildMediaContent(model).ToJson();
+        bookmark.UpdatedAt = DateTime.UtcNow;
+
+        try
+        {
+            // Update Categories
+            _context.BookmarkCategories.RemoveRange(bookmark.BookmarkCategories);
+            await UpdateBookmarkCategories(bookmark, model.SelectedCategoryIds, user.Id);
+
+            // Update Tags
+            _context.BookmarkTags.RemoveRange(bookmark.BookmarkTags);
+            await UpdateBookmarkTags(bookmark, model.SelectedTagIds);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating bookmark");
+            ModelState.AddModelError("", "Failed to update bookmark. Please try again.");
+            await LoadCategories(model, user.Id);
+            await LoadTags(model);
+            return View(model);
+        }
+
+        TempData["SuccessMessage"] = "Bookmark updated successfully.";
+        return RedirectToAction(nameof(Details), new { id = bookmark.Id });
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var bookmark = await _context.Bookmarks
+            .Include(b => b.User)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (bookmark == null)
+        {
+            return NotFound();
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (!IsOwner(bookmark, currentUserId))
+        {
+            return Forbid();
+        }
+
+        var model = BuildDetailsViewModel(bookmark, currentUserId);
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var bookmark = await _context.Bookmarks.FirstOrDefaultAsync(b => b.Id == id);
+        if (bookmark == null)
+        {
+            return NotFound();
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (!IsOwner(bookmark, currentUserId))
+        {
+            return Forbid();
+        }
+
+        _context.Bookmarks.Remove(bookmark);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting bookmark");
+            TempData["ErrorMessage"] = "Failed to delete bookmark. Please try again.";
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+        TempData["SuccessMessage"] = "Bookmark deleted successfully.";
+        return RedirectToAction(nameof(HomeController.Index), "Home");
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> Details(int id)
+    {
+        var bookmark = await _context.Bookmarks
+            .Include(b => b.User)
+            .Include(b => b.Comments)
+                .ThenInclude(c => c.User)
+            .Include(b => b.Votes)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (bookmark == null)
+        {
+            return NotFound();
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+        if (!bookmark.IsPublic && !IsOwner(bookmark, currentUserId))
+        {
+            return NotFound();
+        }
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        ViewData["CurrentUserProfilePictureUrl"] = currentUser?.ProfilePictureUrl;
+
+        // Set meta tags for social sharing
+        var media = BookmarkMediaContent.SafeFromJson(bookmark.Content);
+        ViewData["Description"] = bookmark.Description;
+        if (!string.IsNullOrWhiteSpace(media.ImageUrl))
+        {
+            ViewData["OgImage"] = media.ImageUrl;
+        }
+
+        var model = BuildDetailsViewModel(bookmark, currentUserId);
+        return View(model);
+    }
+
+    private async Task LoadCategories(BookmarkFormViewModel model, string userId)
+    {
+        var categories = await _context.Categories
+            .Where(c => c.UserId == userId)
+            .OrderBy(c => c.Name)
+            .Select(c => new { c.Id, c.Name })
+            .ToListAsync();
+
+        model.AvailableCategories = categories.Select(c => new SelectListItem
+        {
+            Value = c.Id.ToString(),
+            Text = c.Name,
+            Selected = model.SelectedCategoryIds.Contains(c.Id)
+        }).ToList();
+    }
+
+    private async Task LoadTags(BookmarkFormViewModel model)
+    {
+        var tags = await _context.Tags
+            .OrderBy(t => t.Name)
+            .Select(t => new { t.Id, t.Name })
+            .ToListAsync();
+
+        model.AvailableTags = tags.Select(t => new SelectListItem
+        {
+            Value = t.Id.ToString(),
+            Text = t.Name,
+            Selected = model.SelectedTagIds.Contains(t.Id)
+        }).ToList();
+    }
+
+    private static bool IsOwner(Bookmark bookmark, string? userId)
+    {
+        return !string.IsNullOrEmpty(userId) && bookmark.UserId == userId;
+    }
+
+    private static BookmarkMediaContent BuildMediaContent(BookmarkFormViewModel model)
+    {
+        var videoUrl = string.IsNullOrWhiteSpace(model.VideoUrl) ? null : model.VideoUrl.Trim();
+        var imageUrl = string.IsNullOrWhiteSpace(model.ImageUrl) ? null : model.ImageUrl.Trim();
+
+        // Auto-apply video thumbnail if no image is set
+        if (imageUrl == null && videoUrl != null)
+        {
+            imageUrl = BookmarkMediaContent.GetVideoThumbnailUrl(videoUrl);
+        }
+
+        return new BookmarkMediaContent
+        {
+            TextContent = string.IsNullOrWhiteSpace(model.TextContent) ? null : model.TextContent.Trim(),
+            ImageUrl = imageUrl,
+            VideoUrl = videoUrl
+        };
+    }
+
+    private static BookmarkFormViewModel BuildFormViewModel(Bookmark bookmark, BookmarkMediaContent media)
+    {
+        return new BookmarkFormViewModel
+        {
+            Id = bookmark.Id,
+            Title = bookmark.Title,
+            Description = bookmark.Description,
+            IsPublic = bookmark.IsPublic,
+            TextContent = media.TextContent,
+            ImageUrl = media.ImageUrl,
+            VideoUrl = media.VideoUrl,
+            SelectedCategoryIds = bookmark.BookmarkCategories.Select(bc => bc.CategoryId).ToList(),
+            SelectedTagIds = bookmark.BookmarkTags.Select(bt => bt.TagId).ToList()
+        };
+    }
+
+    private static BookmarkDetailsViewModel BuildDetailsViewModel(Bookmark bookmark, string? currentUserId)
+    {
+        var media = BookmarkMediaContent.SafeFromJson(bookmark.Content);
+        return new BookmarkDetailsViewModel
+        {
+            Id = bookmark.Id,
+            Title = bookmark.Title,
+            Description = bookmark.Description,
+            CreatedAt = bookmark.CreatedAt,
+            UpdatedAt = bookmark.UpdatedAt,
+            IsPublic = bookmark.IsPublic,
+            AuthorName = UserHelper.GetAuthorName(bookmark.User),
+            AuthorUsername = bookmark.User?.UserName ?? string.Empty,
+            CanEdit = IsOwner(bookmark, currentUserId),
+            MediaContent = media,
+            VoteCount = bookmark.Votes?.Count ?? 0,
+            IsLikedByCurrentUser = !string.IsNullOrEmpty(currentUserId) && (bookmark.Votes?.Any(v => v.UserId == currentUserId) ?? false),
+            Comments = bookmark.Comments
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new CommentDto
+                {
+                    Id = c.Id,
+                    Content = c.Content,
+                    AuthorName = UserHelper.GetAuthorName(c.User),
+                    AuthorFirstName = UserHelper.GetAuthorFirstName(c.User),
+                    AuthorUserName = c.User != null ? c.User.UserName ?? string.Empty : string.Empty,
+                    AuthorProfilePictureUrl = c.User?.ProfilePictureUrl,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    IsOwner = !string.IsNullOrEmpty(currentUserId) && c.UserId == currentUserId
+                })
+                .ToList()
+        };
+    }
+
+    private async Task UpdateBookmarkCategories(Bookmark bookmark, List<int> categoryIds, string userId)
+    {
+        if (!categoryIds.Any())
+        {
+            return;
+        }
+
+        var validCategoryIds = await _context.Categories
+            .Where(c => c.UserId == userId && categoryIds.Contains(c.Id))
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        foreach (var catId in validCategoryIds)
+        {
+            _context.BookmarkCategories.Add(new BookmarkCategory
+            {
+                BookmarkId = bookmark.Id,
+                CategoryId = catId
+            });
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving bookmark categories");
+            throw;
+        }
+    }
+
+    private async Task UpdateBookmarkTags(Bookmark bookmark, List<int> tagIds)
+    {
+        if (!tagIds.Any())
+        {
+            return;
+        }
+
+        var validTagIds = await _context.Tags
+            .Where(t => tagIds.Contains(t.Id))
+            .Select(t => t.Id)
+            .ToListAsync();
+
+        foreach (var tagId in validTagIds)
+        {
+            _context.BookmarkTags.Add(new BookmarkTag
+            {
+                BookmarkId = bookmark.Id,
+                TagId = tagId
+            });
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving bookmark tags");
+            throw;
+        }
+    }
+
+    #region AI Suggestions
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SuggestTags([FromBody] SuggestTagsRequest request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized(new { success = false, error = "User not authenticated." });
+        }
+
+        // Rate limiting check
+        var canProceed = await _rateLimitingService.TryAcquireAsync(user.Id, "SuggestTags");
+        if (!canProceed)
+        {
+            var waitTime = await _rateLimitingService.GetTimeUntilNextAllowedAsync(user.Id, "SuggestTags");
+            var waitSeconds = waitTime?.TotalSeconds ?? 60;
+            return StatusCode(429, new
+            {
+                success = false,
+                error = $"Rate limit exceeded. Please wait {Math.Ceiling(waitSeconds)} seconds before trying again."
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return BadRequest(new { success = false, error = "Title is required for suggestions." });
+        }
+
+        // Limit description length to prevent excessive API token usage
+        var description = request.Description?.Length > 500
+            ? request.Description[..500]
+            : request.Description;
+
+        var result = await _aiSuggestionService.GetSuggestionsAsync(request.Title, description);
+
+        if (!result.Success)
+        {
+            return StatusCode(500, new { success = false, error = result.ErrorMessage });
+        }
+
+        // Look up existing tags and categories that match suggestions
+        var existingTags = await _context.Tags
+            .Where(t => result.SuggestedTags.Select(s => s.ToLower()).Contains(t.Name.ToLower()))
+            .Select(t => new { t.Id, t.Name })
+            .ToListAsync();
+
+        var existingCategories = await _context.Categories
+            .Where(c => c.UserId == user.Id && result.SuggestedCategories.Select(s => s.ToLower()).Contains(c.Name.ToLower()))
+            .Select(c => new { c.Id, c.Name })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            success = true,
+            suggestedTags = result.SuggestedTags.Select(tagName => new
+            {
+                name = tagName,
+                id = existingTags.FirstOrDefault(t => t.Name.Equals(tagName, StringComparison.OrdinalIgnoreCase))?.Id,
+                exists = existingTags.Any(t => t.Name.Equals(tagName, StringComparison.OrdinalIgnoreCase))
+            }),
+            suggestedCategories = result.SuggestedCategories.Select(catName => new
+            {
+                name = catName,
+                id = existingCategories.FirstOrDefault(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase))?.Id,
+                exists = existingCategories.Any(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase))
+            })
+        });
+    }
+
+    public class SuggestTagsRequest
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private IQueryable<Bookmark> GetMyBookmarksQuery(string userId, string? filter, string? sort)
+    {
+        // Base query - user's bookmarks only
+        var query = _context.Bookmarks.Where(b => b.UserId == userId);
+
+        // Apply privacy filter
+        var normalizedFilter = NormalizeFilter(filter);
+        if (normalizedFilter == "public")
+            query = query.Where(b => b.IsPublic);
+        else if (normalizedFilter == "private")
+            query = query.Where(b => !b.IsPublic);
+
+        // Apply sorting
+        var normalizedSort = NormalizeSortForMyBookmarks(sort);
+        query = normalizedSort switch
+        {
+            "popular" => query.OrderByDescending(b => b.Votes.Count).ThenByDescending(b => b.CreatedAt),
+            "oldest" => query.OrderBy(b => b.CreatedAt),
+            "alphabetical" => query.OrderBy(b => b.Title),
+            _ => query.OrderByDescending(b => b.CreatedAt) // recent
+        };
+
+        return query;
+    }
+
+    private static string NormalizeFilter(string? filter)
+    {
+        return filter?.ToLowerInvariant() switch
+        {
+            "public" => "public",
+            "private" => "private",
+            _ => "all"
+        };
+    }
+
+    private static string NormalizeSortForMyBookmarks(string? sort)
+    {
+        return sort?.ToLowerInvariant() switch
+        {
+            "popular" => "popular",
+            "oldest" => "oldest",
+            "alphabetical" => "alphabetical",
+            _ => "recent"
+        };
+    }
+
+    #endregion
+}

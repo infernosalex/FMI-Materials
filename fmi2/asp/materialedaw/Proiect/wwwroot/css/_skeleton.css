@@ -1,0 +1,215 @@
+/* ================================
+   Skeleton Loading States
+   Shared shimmer animations and loading placeholders
+   ================================ */
+
+/* Base Shimmer Animation */
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Base Skeleton Style */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--sand-100) 25%,
+        var(--sand-200) 50%,
+        var(--sand-100) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+}
+
+/* Skeleton Card (for bookmark cards, etc.) */
+.skeleton-card {
+    background: white;
+    overflow: hidden;
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+}
+
+.skeleton-media {
+    height: 120px;
+    background: linear-gradient(90deg, var(--sand-100) 25%, var(--sand-200) 50%, var(--sand-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-body {
+    padding: 1rem;
+}
+
+.skeleton-title {
+    height: 1.25rem;
+    width: 80%;
+    background: linear-gradient(90deg, var(--sand-100) 25%, var(--sand-200) 50%, var(--sand-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-description {
+    height: 0.875rem;
+    width: 100%;
+    background: linear-gradient(90deg, var(--sand-100) 25%, var(--sand-200) 50%, var(--sand-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-description.short {
+    width: 60%;
+}
+
+.skeleton-meta {
+    height: 0.75rem;
+    width: 40%;
+    background: linear-gradient(90deg, var(--sand-100) 25%, var(--sand-200) 50%, var(--sand-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-stats {
+    height: 0.75rem;
+    width: 20%;
+    background: linear-gradient(90deg, var(--sand-100) 25%, var(--sand-200) 50%, var(--sand-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+/* Admin Skeleton Variants */
+.admin-skeleton {
+    background: linear-gradient(90deg,
+        var(--sand-100) 25%,
+        var(--sand-50) 50%,
+        var(--sand-100) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+.admin-skeleton-stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+}
+
+.admin-skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+}
+
+.admin-skeleton-content {
+    flex: 1;
+}
+
+.admin-skeleton-value {
+    height: 28px;
+    width: 60px;
+    margin-bottom: 0.5rem;
+}
+
+.admin-skeleton-label {
+    height: 14px;
+    width: 80px;
+}
+
+.admin-skeleton-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--sand-100);
+}
+
+.admin-skeleton-row:last-child {
+    border-bottom: none;
+}
+
+.admin-skeleton-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.admin-skeleton-text {
+    flex: 1;
+}
+
+.admin-skeleton-title {
+    height: 16px;
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+
+.admin-skeleton-meta {
+    height: 12px;
+    width: 40%;
+}
+
+/* Table skeleton */
+.admin-skeleton-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 0.5fr 0.5fr 1fr 0.5fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--sand-100);
+    align-items: center;
+}
+
+.admin-skeleton-cell {
+    height: 16px;
+    border-radius: 4px;
+}
+
+.admin-skeleton-cell--short {
+    width: 60%;
+}
+
+.admin-skeleton-cell--badge {
+    width: 60px;
+    height: 24px;
+    border-radius: 12px;
+}
+
+/* Loading overlay for panels */
+.skeleton-overlay {
+    position: relative;
+    pointer-events: none;
+}
+
+.skeleton-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--white-70);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+}
+
+/* Responsive skeleton adjustments */
+@media (max-width: 768px) {
+    .admin-skeleton-table-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-skeleton-table-row .admin-skeleton-cell:nth-child(n+3) {
+        display: none;
+    }
+}

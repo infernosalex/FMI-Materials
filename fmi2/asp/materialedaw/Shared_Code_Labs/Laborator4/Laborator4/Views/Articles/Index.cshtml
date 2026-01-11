@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.PageName = "Index";
+}
+
+<h2>@ViewBag.PageName</h2>
+
+<hr />
+
+@foreach (var article in ViewBag.Articles)
+{
+    <h1>@article.Title</h1>
+    <p>@article.Content</p>
+    <small>@article.Date</small>
+
+    <a href="/Articles/Show/@article.Id">Afisare articol</a>  // Ruta implicita
+    <a href="/Articles/Edit/@article.Id">Editare articol</a>
+
+  // <a href="/articole/show/@article.Id">Afisare articol</a> // Ruta configurata
+
+    <br />
+    <hr />
+    <br />
+}
+
+<a href="/Articles/New">Adaugare articol</a>

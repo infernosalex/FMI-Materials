@@ -1,0 +1,216 @@
+/* UI Components - Alerts, Dropdowns, Badges, Footer */
+
+/* ===========================
+   Alerts
+   =========================== */
+
+.alert {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: var(--alert-success-bg);
+    color: var(--alert-success-text);
+    border-left-color: var(--success);
+}
+
+.alert-danger {
+    background-color: var(--alert-danger-bg);
+    color: var(--alert-danger-text);
+    border-left-color: var(--error);
+}
+
+.alert-info {
+    background-color: var(--alert-info-bg);
+    color: var(--alert-info-text);
+    border-left-color: var(--alert-info-border);
+}
+
+/* ===========================
+   Dropdown Menu
+   =========================== */
+
+.dropdown-menu {
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    border-radius: var(--radius-sm);
+    padding: 0.625rem 1rem;
+    transition: all var(--transition-fast);
+    font-size: 0.9375rem;
+    color: var(--sand-700);
+}
+
+.dropdown-item:hover {
+    background-color: var(--sand-100);
+    color: var(--sand-900);
+}
+
+.dropdown-item i {
+    width: 1.25rem;
+    margin-right: 0.75rem;
+    color: var(--sand-400);
+}
+
+.dropdown-divider {
+    border-top: 1px solid var(--sand-200);
+    margin: 0.5rem 0;
+}
+
+/* ===========================
+   Badges
+   =========================== */
+
+.badge {
+    padding: 0.375rem 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+}
+
+.badge-primary {
+    background-color: var(--accent);
+    color: white;
+}
+
+/* ===========================
+   Icons & Shapes
+   =========================== */
+
+.icon-circle {
+    width: 56px;
+    height: 56px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.rounded-circle {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+/* ===========================
+   Footer
+   =========================== */
+
+.footer {
+    background-color: white;
+    border-top: 1px solid var(--sand-200);
+    color: var(--sand-600);
+    margin-top: auto;
+    padding: 2rem 0;
+}
+
+.footer a {
+    color: var(--sand-600);
+    text-decoration: none;
+    transition: color var(--transition-base);
+    font-size: 0.9375rem;
+}
+
+.footer a:hover {
+    color: var(--accent);
+}
+
+.footer h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sand-900);
+    margin-bottom: 1rem;
+}
+
+/* ===========================
+   Unified Empty State
+   =========================== */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    background: var(--cream);
+    border: 1px solid var(--sand-200);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    min-height: 300px;
+}
+
+.empty-state__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.empty-state__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--sand-700);
+}
+
+.empty-state__text {
+    color: var(--sand-600);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state__action {
+    margin-top: auto;
+}
+
+/* ===========================
+   Share Modal
+   =========================== */
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+#qr-code-canvas {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+#qr-code-canvas canvas,
+#qr-code-canvas svg {
+    display: block;
+}
+
+#share-modal .modal-content {
+    border-radius: 16px;
+    border: none;
+}
+
+#share-modal .input-group .form-control {
+    background-color: var(--sand-50);
+    border-right: none;
+}
+
+#share-modal .input-group .btn {
+    border-left: none;
+    background-color: var(--sand-50);
+}
+
+#share-modal .input-group .btn:hover {
+    background-color: var(--accent-10);
+    color: var(--accent);
+}
+
+#native-share-btn {
+    display: none;
+}

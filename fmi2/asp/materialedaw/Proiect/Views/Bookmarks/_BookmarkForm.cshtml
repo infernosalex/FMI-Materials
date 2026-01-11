@@ -1,0 +1,823 @@
+@model markly.ViewModels.BookmarkFormViewModel
+
+@{
+    ViewData["PublicText"] = "Visible to everyone";
+    ViewData["PrivateText"] = "Visible only to you";
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
+
+@if (Model.Id.HasValue)
+{
+    <input type="hidden" asp-for="Id" />
+}
+
+@* Title *@
+<div class="mb-4">
+    <label asp-for="Title" class="form-label fw-bold">
+        Title <span class="text-danger" title="Required">*</span>
+    </label>
+    <input asp-for="Title" class="form-control form-control-lg" placeholder="e.g., Awesome Documentation" autofocus />
+    <span asp-validation-for="Title" class="text-danger"></span>
+</div>
+
+@* Media Section - Prominent *@
+<div class="card bg-light border-0 mb-4">
+    <div class="card-body">
+        <h6 class="card-title fw-bold mb-3"><i class="bi bi-images me-2"></i>Media Content</h6>
+        <p class="card-text text-muted small mb-3">Add visual content to make your bookmark stand out. We support images and videos.</p>
+        
+        <div class="row g-3">
+            <div class="col-12">
+                <label asp-for="ImageUrl" class="form-label fw-semibold">Cover Image URL</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-image"></i></span>
+                    <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.png" />
+                </div>
+                <div class="form-text small">Direct link to a JPG, PNG, or GIF.</div>
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+            
+            <div class="col-12">
+                <label asp-for="VideoUrl" class="form-label fw-semibold">Video URL</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-play-btn"></i></span>
+                    <input asp-for="VideoUrl" class="form-control" placeholder="https://youtube.com/watch?v=..." />
+                </div>
+                <div class="form-text small">YouTube or Vimeo link.</div>
+                <span asp-validation-for="VideoUrl" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Description *@
+<div class="mb-4">
+    <label asp-for="Description" class="form-label fw-bold">
+        Short Description <span class="text-danger" title="Required">*</span>
+    </label>
+    <textarea asp-for="Description" class="form-control" rows="2" placeholder="Brief summary of the resource..."></textarea>
+    <span asp-validation-for="Description" class="text-danger"></span>
+</div>
+
+@* Extended Notes *@
+<div class="mb-4">
+    <label asp-for="TextContent" class="form-label fw-semibold">
+        Extended Notes <span class="text-muted small fw-normal">(Optional)</span>
+    </label>
+    <textarea asp-for="TextContent" class="form-control" rows="4" placeholder="Detailed notes, code snippets, or markdown content..."></textarea>
+    <span asp-validation-for="TextContent" class="text-danger"></span>
+</div>
+
+@* AI Suggestions *@
+<div class="ai-suggestions-card mb-4">
+    <div class="ai-suggestions-card__glow"></div>
+    <div class="ai-suggestions-card__content">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="ai-icon-wrapper">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h6 class="ai-suggestions-card__title mb-0">AI Suggestions</h6>
+                    <p class="ai-suggestions-card__subtitle mb-0">Smart tag & category recommendations</p>
+                </div>
+            </div>
+            <button type="button" class="btn ai-suggest-btn" id="suggest-with-ai-btn">
+                <span id="ai-spinner" class="ai-suggest-btn__spinner d-none">
+                    <span class="spinner-dot"></span>
+                    <span class="spinner-dot"></span>
+                    <span class="spinner-dot"></span>
+                </span>
+                <i class="bi bi-magic" id="ai-icon"></i>
+                <span id="ai-button-text">Suggest</span>
+            </button>
+        </div>
+
+        @* Preview State - shown before any suggestions *@
+        <div id="ai-preview-state" class="ai-preview-state">
+            <p class="ai-preview-hint">
+                <i class="bi bi-lightbulb"></i>
+                Add a title and description above, then click <strong>Suggest</strong> for AI-powered recommendations
+            </p>
+        </div>
+
+        @* Loading State *@
+        <div id="ai-loading-state" class="ai-loading-state d-none">
+            <div class="ai-loading-shimmer">
+                <div class="shimmer-chip"></div>
+                <div class="shimmer-chip"></div>
+                <div class="shimmer-chip"></div>
+            </div>
+            <p class="ai-loading-text" id="ai-loading-text">Analyzing your content...</p>
+        </div>
+
+        @* AI Suggestions Container *@
+        <div id="ai-suggestions-container" class="d-none" aria-live="polite" aria-atomic="true">
+            <div id="ai-suggested-tags" class="mb-3 d-none">
+                <label class="form-label fw-semibold small text-muted d-flex align-items-center gap-2">
+                    <i class="bi bi-tag"></i> Suggested Tags
+                </label>
+                <div class="suggestion-chips" id="ai-tag-chips">
+                    @* Chips injected by JS *@
+                </div>
+            </div>
+            <div id="ai-suggested-categories" class="d-none">
+                <label class="form-label fw-semibold small text-muted d-flex align-items-center gap-2">
+                    <i class="bi bi-folder"></i> Suggested Categories
+                </label>
+                <div class="suggestion-chips" id="ai-category-chips">
+                    @* Chips injected by JS *@
+                </div>
+            </div>
+        </div>
+
+        <div id="ai-error" class="ai-error-state d-none">
+            <i class="bi bi-exclamation-circle"></i>
+            <span id="ai-error-text"></span>
+        </div>
+    </div>
+</div>
+
+@* Categories *@
+<div class="mb-4">
+    <label class="form-label fw-semibold">Categories</label>
+    
+    @* Hidden Select for Binding *@
+    <select asp-for="SelectedCategoryIds" asp-items="Model.AvailableCategories" class="d-none" multiple id="category-select">
+    </select>
+
+    @* Visual Picker *@
+    <div class="category-picker" id="category-picker">
+        @* Chips injected by JS *@
+        <button type="button" class="btn category-chip category-create-btn" id="show-create-category-btn" aria-label="Create new category">
+            <i class="bi bi-plus-lg"></i> New
+        </button>
+    </div>
+
+    @* Inline Creator *@
+    <div class="card p-3 mb-3 d-none shadow-sm" id="create-category-group" style="max-width: 300px; border: 1px solid var(--accent-light);">
+        <div class="mb-2">
+            <input type="text" class="form-control form-control-sm" id="new-category-name" placeholder="Category Name">
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" id="new-category-public">
+                <label class="form-check-label small text-muted" for="new-category-public">Public</label>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light border" type="button" id="cancel-create-category">Cancel</button>
+                <button class="btn btn-sm btn-primary" type="button" id="submit-create-category">Add</button>
+            </div>
+        </div>
+        <div class="text-danger small mt-2" id="create-category-error"></div>
+    </div>
+    
+    <span asp-validation-for="SelectedCategoryIds" class="text-danger"></span>
+</div>
+
+@* Tags *@
+<div class="mb-4">
+    <label class="form-label fw-semibold">Tags</label>
+
+    @* Search Box *@
+    <div class="input-group mb-2">
+        <span class="input-group-text bg-white">
+            <i class="bi bi-search"></i>
+        </span>
+        <input type="text" class="form-control" id="tag-search"
+            placeholder="Search tags..." autocomplete="off">
+    </div>
+
+    @* Search Status Messages *@
+    <div id="tag-search-message" class="text-muted small mb-2" style="display: none;"></div>
+
+    @* Hidden Select for Binding *@
+    <select asp-for="SelectedTagIds" asp-items="Model.AvailableTags" class="d-none" multiple id="tag-select">
+    </select>
+
+    @* Visual Picker *@
+    <div class="category-picker" id="tag-picker">
+        @* Chips injected by JS *@
+    </div>
+
+    @* Inline Creator *@
+    <div class="card p-3 mb-3 d-none shadow-sm" id="create-tag-group" style="max-width: 300px; border: 1px solid var(--accent-light);">
+        <div class="mb-2">
+            <input type="text" class="form-control form-control-sm" id="new-tag-name" placeholder="Tag Name (lowercase, hyphens allowed)">
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-sm btn-light border" type="button" id="cancel-create-tag">Cancel</button>
+            <button class="btn btn-sm btn-primary" type="button" id="submit-create-tag">Add</button>
+        </div>
+        <div class="text-danger small mt-2" id="create-tag-error"></div>
+    </div>
+    
+    <span asp-validation-for="SelectedTagIds" class="text-danger"></span>
+</div>
+
+@* Visibility Settings *@
+<partial name="_VisibilityToggle" model="Model.IsPublic" />
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ==================== Category Picker Logic ====================
+        const categorySelect = document.getElementById('category-select');
+        const categoryPicker = document.getElementById('category-picker');
+        const showCreateCategoryBtn = document.getElementById('show-create-category-btn');
+        const createCategoryGroup = document.getElementById('create-category-group');
+        const categoryInput = document.getElementById('new-category-name');
+        const categoryPublicCheck = document.getElementById('new-category-public');
+        const cancelCategoryBtn = document.getElementById('cancel-create-category');
+        const submitCategoryBtn = document.getElementById('submit-create-category');
+        const categoryErrorMsg = document.getElementById('create-category-error');
+
+        // Render Initial Category Chips
+        Array.from(categorySelect.options).forEach(option => {
+            createCategoryChip(option.value, option.text, option.selected);
+        });
+        categoryPicker.appendChild(showCreateCategoryBtn);
+
+        function createCategoryChip(value, text, isSelected) {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = `category-chip ${isSelected ? 'selected' : ''}`;
+            chip.dataset.value = value;
+            chip.innerHTML = `<i class="bi bi-check-lg"></i>${text}`;
+            chip.setAttribute('aria-label', `${text}${isSelected ? ', selected' : ''}`);
+
+            const toggleSelection = () => {
+                chip.classList.toggle('selected');
+                const option = categorySelect.querySelector(`option[value="${value}"]`);
+                option.selected = chip.classList.contains('selected');
+                chip.setAttribute('aria-label', `${text}${chip.classList.contains('selected') ? ', selected' : ''}`);
+            };
+
+            chip.addEventListener('click', toggleSelection);
+            chip.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    toggleSelection();
+                }
+            });
+
+            categoryPicker.insertBefore(chip, showCreateCategoryBtn);
+            return chip;
+        }
+
+        showCreateCategoryBtn.addEventListener('click', () => {
+            showCreateCategoryBtn.classList.add('d-none');
+            createCategoryGroup.classList.remove('d-none');
+            categoryInput.focus();
+        });
+
+        cancelCategoryBtn.addEventListener('click', resetCategoryForm);
+
+        submitCategoryBtn.addEventListener('click', async () => {
+            const name = categoryInput.value.trim();
+            if (!name) return;
+
+            submitCategoryBtn.disabled = true;
+            categoryErrorMsg.textContent = '';
+
+            try {
+                const response = await csrf.fetch(API.CATEGORIES.CREATE_QUICK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, isPublic: categoryPublicCheck.checked })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const option = new Option(data.category.name, data.category.id, true, true);
+                    categorySelect.add(option);
+                    createCategoryChip(data.category.id, data.category.name, true);
+                    resetCategoryForm();
+                } else {
+                    categoryErrorMsg.textContent = data.message || 'Failed to create category.';
+                }
+            } catch (e) {
+                console.error('Error creating category:', e);
+                categoryErrorMsg.textContent = 'Failed to create category. Please try again.';
+            } finally {
+                submitCategoryBtn.disabled = false;
+            }
+        });
+        
+        function resetCategoryForm() {
+            categoryInput.value = '';
+            categoryPublicCheck.checked = false;
+            createCategoryGroup.classList.add('d-none');
+            showCreateCategoryBtn.classList.remove('d-none');
+            categoryErrorMsg.textContent = '';
+        }
+        
+        categoryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitCategoryBtn.click();
+            }
+        });
+
+        // ==================== Tag Picker Logic ====================
+        const tagSelect = document.getElementById('tag-select');
+        const tagPicker = document.getElementById('tag-picker');
+        const createTagGroup = document.getElementById('create-tag-group');
+        const tagInput = document.getElementById('new-tag-name');
+        const cancelTagBtn = document.getElementById('cancel-create-tag');
+        const submitTagBtn = document.getElementById('submit-create-tag');
+        const tagErrorMsg = document.getElementById('create-tag-error');
+
+        // Store selected tags for the form
+        const selectedTags = new Set(Array.from(tagSelect.options).filter(opt => opt.selected).map(opt => opt.value));
+
+        // Render selected tags as chips (preserve search results)
+        function renderSelectedTags() {
+            // Save existing search result chips
+            const searchResults = Array.from(tagPicker.querySelectorAll('.search-result'));
+
+            // Remove existing selected tag chips (not search results)
+            tagPicker.querySelectorAll('.category-chip:not(.search-result)').forEach(chip => chip.remove());
+
+            selectedTags.forEach(tagId => {
+                const option = tagSelect.querySelector(`option[value="${tagId}"]`);
+                if (option) {
+                    createTagChip(tagId, option.text, true);
+                }
+            });
+
+            // Re-insert search results after selected tags (exclude already selected ones)
+            searchResults.forEach(chip => {
+                const chipValue = chip.dataset.value;
+                if (!selectedTags.has(chipValue)) {
+                    tagPicker.appendChild(chip);
+                } else {
+                    // Remove chip if it's now selected
+                    chip.remove();
+                }
+            });
+        }
+
+        // Initial render of selected tags
+        renderSelectedTags();
+
+        function attachToggleListener(chip, tagId, tagName) {
+            const toggleSelection = () => {
+                chip.classList.toggle('selected');
+                const wasSelected = chip.classList.contains('selected');
+
+                if (wasSelected) {
+                    selectedTags.add(tagId.toString());
+                } else {
+                    selectedTags.delete(tagId.toString());
+                }
+
+                // Update hidden select for form submission
+                const option = tagSelect.querySelector(`option[value="${tagId}"]`);
+                if (option) {
+                    option.selected = wasSelected;
+                }
+
+                chip.setAttribute('aria-label', `Tag: ${tagName}${wasSelected ? ', selected' : ''}`);
+            };
+
+            chip.addEventListener('click', toggleSelection);
+            chip.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    toggleSelection();
+                }
+            });
+
+            return toggleSelection;
+        }
+
+        function createTagChip(value, text, isSelected) {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = `category-chip ${isSelected ? 'selected' : ''}`;
+            chip.dataset.value = value;
+            chip.innerHTML = `<i class="bi bi-check-lg"></i><i class="bi bi-tag me-1"></i>${text}`;
+            chip.setAttribute('aria-label', `Tag: ${text}${isSelected ? ', selected' : ''}`);
+
+            attachToggleListener(chip, value, text);
+            tagPicker.appendChild(chip);
+            return chip;
+        }
+
+        cancelTagBtn.addEventListener('click', resetTagForm);
+
+        submitTagBtn.addEventListener('click', async () => {
+            const name = tagInput.value.trim();
+            if (!name) return;
+
+            submitTagBtn.disabled = true;
+            tagErrorMsg.textContent = '';
+
+            try {
+                const response = await csrf.fetch(API.TAGS.CREATE_QUICK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Add tag to select
+                    let option = tagSelect.querySelector(`option[value="${data.tag.id}"]`);
+                    if (!option) {
+                        option = new Option(data.tag.name, data.tag.id);
+                        tagSelect.add(option);
+                    }
+                    option.selected = true;
+                    selectedTags.add(data.tag.id.toString());
+
+                    renderSelectedTags();
+                    resetTagForm();
+                } else {
+                    tagErrorMsg.textContent = data.message || 'Failed to create tag.';
+                }
+            } catch (e) {
+                console.error('Error creating tag:', e);
+                tagErrorMsg.textContent = 'Failed to create tag. Please try again.';
+            } finally {
+                submitTagBtn.disabled = false;
+            }
+        });
+
+        function resetTagForm() {
+            tagInput.value = '';
+            createTagGroup.classList.add('d-none');
+            tagErrorMsg.textContent = '';
+        }
+        
+        tagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitTagBtn.click();
+            }
+        });
+
+        // ==================== Tag Search API ====================
+        const tagSearch = document.getElementById('tag-search');
+        const tagSearchMessage = document.getElementById('tag-search-message');
+        const MIN_SEARCH_LENGTH = 2;
+        const SEARCH_DEBOUNCE_MS = 300;
+        let searchTimeout;
+
+        if (tagSearch) {
+            tagSearch.addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+
+                // Clear previous timeout
+                clearTimeout(searchTimeout);
+
+                // Remove previous search results and message
+                tagPicker.querySelectorAll('.category-chip.search-result').forEach(chip => chip.remove());
+                tagSearchMessage.innerHTML = '';
+
+                // If search is empty, hide messages
+                if (!searchTerm) {
+                    tagSearchMessage.style.display = 'none';
+                    return;
+                }
+
+                // If less than min length, show message
+                if (searchTerm.length < MIN_SEARCH_LENGTH) {
+                    tagSearchMessage.style.display = 'block';
+                    tagSearchMessage.textContent = `Type at least ${MIN_SEARCH_LENGTH} characters to search`;
+                    return;
+                }
+
+                // Debounce API call
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`${API.TAGS.SEARCH}?q=${encodeURIComponent(searchTerm)}`);
+                        const data = await response.json();
+
+                        tagSearchMessage.style.display = 'none';
+
+                        if (data.success && data.tags.length > 0) {
+                            // Check if exact match exists
+                            const exactMatch = data.tags.some(t => t.name.toLowerCase() === searchTerm.toLowerCase());
+
+                            // Add search result chips (only show tags that aren't already selected)
+                            data.tags.forEach(tag => {
+                                // Skip already selected tags (they're shown at the top)
+                                if (selectedTags.has(tag.id.toString())) return;
+
+                                const chip = document.createElement('button');
+                                chip.type = 'button';
+                                chip.className = `category-chip search-result`;
+                                chip.dataset.value = tag.id;
+                                chip.innerHTML = `<i class="bi bi-check-lg"></i><i class="bi bi-tag me-1"></i>${tag.name}`;
+                                chip.setAttribute('aria-label', `Tag: ${tag.name}`);
+
+                                // Ensure tag exists in hidden select
+                                let option = tagSelect.querySelector(`option[value="${tag.id}"]`);
+                                if (!option) {
+                                    option = new Option(tag.name, tag.id);
+                                    tagSelect.add(option);
+                                }
+
+                                attachToggleListener(chip, tag.id, tag.name);
+                                chip.addEventListener('click', () => renderSelectedTags());
+                                tagPicker.appendChild(chip);
+                            });
+
+                            // If no exact match, show option to create new tag
+                            if (!exactMatch) {
+                                const createBtn = document.createElement('button');
+                                createBtn.type = 'button';
+                                createBtn.className = 'category-chip search-result';
+                                createBtn.style.border = '2px dashed currentColor';
+                                createBtn.style.opacity = '0.7';
+                                createBtn.innerHTML = `<i class="bi bi-plus-lg me-1"></i>Create "<strong>${escapeHtml(searchTerm)}</strong>"`;
+                                createBtn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    createNewTag(searchTerm);
+                                });
+                                tagPicker.appendChild(createBtn);
+                            }
+                        } else {
+                            // No tags found - show option to create new tag
+                            tagSearchMessage.style.display = 'block';
+                            const createBtn = document.createElement('button');
+                            createBtn.type = 'button';
+                            createBtn.className = 'category-chip search-result';
+                            createBtn.style.border = '2px dashed currentColor';
+                            createBtn.style.opacity = '0.7';
+                            createBtn.innerHTML = `<i class="bi bi-plus-lg me-1"></i>Create "<strong>${escapeHtml(searchTerm)}</strong>"`;
+                            createBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                createNewTag(searchTerm);
+                            });
+                            tagSearchMessage.appendChild(createBtn);
+                        }
+                    } catch (error) {
+                        console.error('Error searching tags:', error);
+                        tagSearchMessage.style.display = 'block';
+                        tagSearchMessage.textContent = 'Error searching tags. Please try again.';
+                    }
+                }, SEARCH_DEBOUNCE_MS);
+            });
+
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            // Create tag and cleanup search
+            async function createNewTag(name) {
+                try {
+                    const response = await csrf.fetch(API.TAGS.CREATE_QUICK, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: name })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        // Add tag to select and mark as selected
+                        let option = tagSelect.querySelector(`option[value="${data.tag.id}"]`);
+                        if (!option) {
+                            option = new Option(data.tag.name, data.tag.id);
+                            tagSelect.add(option);
+                        }
+                        option.selected = true;
+                        selectedTags.add(data.tag.id.toString());
+
+                        // Clear search and re-render
+                        tagSearch.value = '';
+                        tagPicker.querySelectorAll('.category-chip.search-result').forEach(chip => chip.remove());
+                        tagSearchMessage.style.display = 'none';
+                        tagSearchMessage.innerHTML = '';
+                        renderSelectedTags();
+                    } else {
+                        tagSearchMessage.style.display = 'block';
+                        tagSearchMessage.textContent = data.message || 'Failed to create tag.';
+                    }
+                } catch (e) {
+                    console.error('Error creating tag:', e);
+                    tagSearchMessage.style.display = 'block';
+                    tagSearchMessage.textContent = 'Failed to create tag. Please try again.';
+                }
+            }
+        }
+
+        // ==================== AI Suggestions Logic ====================
+        const suggestBtn = document.getElementById('suggest-with-ai-btn');
+        const aiSpinner = document.getElementById('ai-spinner');
+        const aiIcon = document.getElementById('ai-icon');
+        const aiButtonText = document.getElementById('ai-button-text');
+        const aiPreviewState = document.getElementById('ai-preview-state');
+        const aiLoadingState = document.getElementById('ai-loading-state');
+        const aiLoadingText = document.getElementById('ai-loading-text');
+        const aiContainer = document.getElementById('ai-suggestions-container');
+        const aiTagsSection = document.getElementById('ai-suggested-tags');
+        const aiCategoriesSection = document.getElementById('ai-suggested-categories');
+        const aiTagChips = document.getElementById('ai-tag-chips');
+        const aiCategoryChips = document.getElementById('ai-category-chips');
+        const aiError = document.getElementById('ai-error');
+        const aiErrorText = document.getElementById('ai-error-text');
+        const titleInput = document.getElementById('Title');
+        const descriptionInput = document.getElementById('Description');
+
+        // Loading text rotation
+        const loadingMessages = [
+            'Analyzing your content...',
+            'Finding relevant tags...',
+            'Matching categories...',
+            'Almost there...'
+        ];
+        let loadingMessageIndex = 0;
+        let loadingInterval = null;
+
+        function startLoadingAnimation() {
+            loadingMessageIndex = 0;
+            aiLoadingText.textContent = loadingMessages[0];
+            loadingInterval = setInterval(() => {
+                loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.length;
+                aiLoadingText.textContent = loadingMessages[loadingMessageIndex];
+            }, 1500);
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+        }
+
+        suggestBtn.addEventListener('click', async () => {
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (!title) {
+                aiErrorText.textContent = 'Please enter a title before requesting suggestions.';
+                aiError.classList.remove('d-none');
+                aiPreviewState.classList.add('d-none');
+                return;
+            }
+
+            // Show loading state
+            suggestBtn.disabled = true;
+            aiSpinner.classList.remove('d-none');
+            aiIcon.classList.add('d-none');
+            aiButtonText.textContent = '';
+            aiError.classList.add('d-none');
+            aiContainer.classList.add('d-none');
+            aiPreviewState.classList.add('d-none');
+            aiLoadingState.classList.remove('d-none');
+            startLoadingAnimation();
+
+            try {
+                const response = await csrf.fetch(API.BOOKMARKS.SUGGEST_TAGS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to get suggestions');
+                }
+
+                // Clear previous suggestions
+                aiTagChips.innerHTML = '';
+                aiCategoryChips.innerHTML = '';
+
+                // Render tag suggestions
+                if (data.suggestedTags && data.suggestedTags.length > 0) {
+                    aiTagsSection.classList.remove('d-none');
+                    for (const tag of data.suggestedTags) {
+                        const chip = createSuggestionChip(tag.name, tag.exists, 'tag', tag.id);
+                        aiTagChips.appendChild(chip);
+                    }
+                } else {
+                    aiTagsSection.classList.add('d-none');
+                }
+
+                // Render category suggestions
+                if (data.suggestedCategories && data.suggestedCategories.length > 0) {
+                    aiCategoriesSection.classList.remove('d-none');
+                    for (const cat of data.suggestedCategories) {
+                        const chip = createSuggestionChip(cat.name, cat.exists, 'category', cat.id);
+                        aiCategoryChips.appendChild(chip);
+                    }
+                } else {
+                    aiCategoriesSection.classList.add('d-none');
+                }
+
+                aiLoadingState.classList.add('d-none');
+                aiContainer.classList.remove('d-none');
+            } catch (e) {
+                console.error('Error getting AI suggestions:', e);
+                aiErrorText.textContent = e.message || 'Failed to get suggestions. Please try again.';
+                aiError.classList.remove('d-none');
+                aiLoadingState.classList.add('d-none');
+            } finally {
+                stopLoadingAnimation();
+                suggestBtn.disabled = false;
+                aiSpinner.classList.add('d-none');
+                aiIcon.classList.remove('d-none');
+                aiButtonText.textContent = 'Suggest';
+            }
+        });
+
+        function createSuggestionChip(name, exists, type, existingId) {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'suggestion-chip';
+            chip.innerHTML = `<i class="bi bi-plus-circle"></i><span>${name}</span>`;
+            chip.title = exists ? `Add existing ${type}` : `Create and add ${type}`;
+            chip.setAttribute('aria-label', `Add ${type}: ${name}`);
+
+            chip.addEventListener('click', async () => {
+                chip.disabled = true;
+
+                try {
+                    if (type === 'tag') {
+                        await addTagSuggestion(name, exists, existingId, chip);
+                    } else {
+                        await addCategorySuggestion(name, exists, existingId, chip);
+                    }
+                } catch (e) {
+                    console.error(`Error adding ${type}:`, e);
+                    chip.disabled = false;
+                }
+            });
+
+            return chip;
+        }
+
+        async function addTagSuggestion(name, exists, existingId, chip) {
+            let tagId = existingId;
+
+            if (!exists) {
+                // Create the tag first
+                const response = await csrf.fetch(API.TAGS.CREATE_QUICK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message);
+                tagId = data.tag.id;
+            }
+
+            // Check if already in select
+            let option = tagSelect.querySelector(`option[value="${tagId}"]`);
+            if (!option) {
+                option = new Option(name, tagId, true, true);
+                tagSelect.add(option);
+                createTagChip(tagId, name, true);
+            } else {
+                option.selected = true;
+                const existingChip = tagPicker.querySelector(`[data-value="${tagId}"]`);
+                if (existingChip) existingChip.classList.add('selected');
+            }
+
+            // Update chip to show added state with animation
+            chip.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${name}</span>`;
+            chip.classList.add('suggestion-chip--added');
+        }
+
+        async function addCategorySuggestion(name, exists, existingId, chip) {
+            let categoryId = existingId;
+
+            if (!exists) {
+                // Create the category first
+                const response = await csrf.fetch(API.CATEGORIES.CREATE_QUICK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, isPublic: false })
+                });
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message);
+                categoryId = data.category.id;
+            }
+
+            // Check if already in select
+            let option = categorySelect.querySelector(`option[value="${categoryId}"]`);
+            if (!option) {
+                option = new Option(name, categoryId, true, true);
+                categorySelect.add(option);
+                createCategoryChip(categoryId, name, true);
+            } else {
+                option.selected = true;
+                const existingChip = categoryPicker.querySelector(`[data-value="${categoryId}"]`);
+                if (existingChip) existingChip.classList.add('selected');
+            }
+
+            // Update chip to show added state with animation
+            chip.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${name}</span>`;
+            chip.classList.add('suggestion-chip--added');
+        }
+    });
+</script>
